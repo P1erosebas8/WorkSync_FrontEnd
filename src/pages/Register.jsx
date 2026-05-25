@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { register, isAuthenticated } from '../services/authService';
 
 export default function Register() {
     const [nombre, setNombre] = useState('');
@@ -11,7 +12,7 @@ export default function Register() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (localStorage.getItem('jwt_token')) {
+        if (isAuthenticated()) {
             navigate('/dashboard');
         }
     }, [navigate]);
@@ -27,27 +28,15 @@ export default function Register() {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, correoElectronico, contrasena, rol: 'COLABORADOR' })
+            await register({ 
+                nombre, 
+                correoElectronico, 
+                contrasena, 
+                rol: 'COLABORADOR' 
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                const token = data.token || data.jwt || data.jwtToken;
-                if (token) {
-                    localStorage.setItem('jwt_token', token);
-                    navigate('/dashboard');
-                } else {
-                    console.error('El backend no devolvió un token válido', data);
-                    setError('Error al procesar la sesión');
-                }
-            } else {
-                setError('El correo ya está en uso o hubo un error');
-            }
+            navigate('/dashboard');
         } catch (err) {
-            setError('Error de conexión con el servidor');
+            setError(err.message || 'Error de conexión con el servidor');
         }
     };
 

@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProjectCard from '../components/dashboard/ProjectCard';
 import toast from 'react-hot-toast';
+import { 
+    obtenerProyectos, 
+    obtenerUsuarios, 
+    crearProyecto, 
+    asignarUsuario, 
+    actualizarProyecto, 
+    archivarProyecto 
+} from '../services/proyectoService';
 
 export default function Dashboard() {
     const [proyectos, setProyectos] = useState([]);
@@ -33,61 +41,34 @@ export default function Dashboard() {
             console.error("Error decodificando token", e);
         }
 
-        fetch('http://localhost:8080/api/proyectos', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
+        obtenerProyectos()
+            .then(data => setProyectos(data))
+            .catch(err => {
+                if (err.message === 'No autorizado') {
                     localStorage.removeItem('jwt_token');
                     navigate('/');
-                    throw new Error('No autorizado');
                 }
-                if (!res.ok) throw new Error('Error al cargar proyectos');
-                return res.json();
-            })
-            .then(data => setProyectos(data))
-            .catch(err => console.error("Error obteniendo proyectos:", err));
+                console.error("Error obteniendo proyectos:", err);
+            });
 
-        fetch('http://localhost:8080/api/usuarios', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => res.json())
+        obtenerUsuarios()
             .then(data => setUsuariosList(data))
             .catch(err => console.error("Error obteniendo usuarios:", err));
     }, [navigate]);
 
+    const cerrarModalYLimpiar = () => {
+        setNuevoProyecto({ nombre: '', descripcion: '' });
+        setIsModalOpen(false);
+    };
+
     const handleCrearProyecto = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('jwt_token');
         
         try {
-            const response = await fetch('http://localhost:8080/api/proyectos', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(nuevoProyecto)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setProyectos([...proyectos, data]);
-                setNuevoProyecto({ nombre: '', descripcion: '' });
-                setIsModalOpen(false);
-                toast.success('Proyecto creado con éxito');
-            } else {
-                toast.error('Error al crear el proyecto');
-                console.error("Error al crear proyecto");
-            }
+            const data = await crearProyecto(nuevoProyecto);
+            setProyectos([...proyectos, data]);
+            cerrarModalYLimpiar();
+            toast.success('Proyecto creado con éxito');
         } catch (error) {
             toast.error('Error al crear el proyecto');
             console.error("Error de red:", error);
@@ -98,26 +79,12 @@ export default function Dashboard() {
         e.preventDefault();
         if (!selectedUsuarioId || !selectedProjectId) return;
         
-        const token = localStorage.getItem('jwt_token');
         try {
-            const response = await fetch('http://localhost:8080/api/asignaciones', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ idUsuario: selectedUsuarioId, idProyecto: selectedProjectId })
-            });
-
-            if (response.ok) {
-                setIsAssignModalOpen(false);
-                setSelectedUsuarioId('');
-                setSelectedProjectId(null);
-                toast.success('Usuario asignado correctamente');
-            } else {
-                toast.error('Error al asignar usuario');
-                console.error("Error al asignar usuario");
-            }
+            await asignarUsuario(selectedUsuarioId, selectedProjectId);
+            setIsAssignModalOpen(false);
+            setSelectedUsuarioId('');
+            setSelectedProjectId(null);
+            toast.success('Usuario asignado correctamente');
         } catch (error) {
             toast.error('Error al asignar usuario');
             console.error("Error de red:", error);
@@ -126,26 +93,12 @@ export default function Dashboard() {
 
     const handleActualizarProyecto = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('jwt_token');
         try {
-            const response = await fetch(`http://localhost:8080/api/proyectos/${proyectoEdit.idProyecto}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(proyectoEdit)
-            });
-
-            if (response.ok) {
-                const updated = await response.json();
-                setProyectos(proyectos.map(p => p.idProyecto === updated.idProyecto ? updated : p));
-                setIsEditModalOpen(false);
-                setProyectoEdit(null);
-                toast.success('Proyecto actualizado');
-            } else {
-                toast.error('Error al actualizar el proyecto');
-            }
+            const updated = await actualizarProyecto(proyectoEdit.idProyecto, proyectoEdit);
+            setProyectos(proyectos.map(p => p.idProyecto === updated.idProyecto ? updated : p));
+            setIsEditModalOpen(false);
+            setProyectoEdit(null);
+            toast.success('Proyecto actualizado');
         } catch (error) {
             toast.error('Error al actualizar el proyecto');
             console.error("Error al actualizar proyecto:", error);
@@ -154,27 +107,14 @@ export default function Dashboard() {
 
     const handleArchivar = async (idProyecto) => {
         if (!window.confirm("¿Estás seguro de cambiar el estado de este proyecto?")) return;
-        const token = localStorage.getItem('jwt_token');
         try {
-            const response = await fetch(`http://localhost:8080/api/proyectos/${idProyecto}/archivar`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                await response.json();
-                setProyectos(prevProyectos => prevProyectos.map(p => 
-                    p.idProyecto === idProyecto 
-                        ? { ...p, estado: p.estado === 'ARCHIVADO' ? 'ACTIVO' : 'ARCHIVADO' } 
-                        : p
-                ));
-                toast.success('Estado del proyecto actualizado');
-            } else {
-                toast.error('Error al cambiar el estado del proyecto');
-            }
+            await archivarProyecto(idProyecto);
+            setProyectos(prevProyectos => prevProyectos.map(p => 
+                p.idProyecto === idProyecto 
+                    ? { ...p, estado: p.estado === 'ARCHIVADO' ? 'ACTIVO' : 'ARCHIVADO' } 
+                    : p
+            ));
+            toast.success('Estado del proyecto actualizado');
         } catch (error) {
             toast.error('Error al cambiar el estado del proyecto');
             console.error("Error al actualizar proyecto:", error);
@@ -264,7 +204,7 @@ export default function Dashboard() {
                             <div className="flex justify-end gap-3 pt-4">
                                 <button 
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={cerrarModalYLimpiar}
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
                                 >
                                     Cancelar

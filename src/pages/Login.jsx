@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { login, isAuthenticated } from '../services/authService';
 
 export default function Login() {
     const [correoElectronico, setCorreoElectronico] = useState('');
@@ -9,7 +10,7 @@ export default function Login() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (localStorage.getItem('jwt_token')) {
+        if (isAuthenticated()) {
             navigate('/dashboard');
         }
     }, [navigate]);
@@ -18,27 +19,10 @@ export default function Login() {
         e.preventDefault();
         setError(null);
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ correoElectronico, contrasena })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                const token = data.token || data.jwt || data.jwtToken;
-                if (token) {
-                    localStorage.setItem('jwt_token', token);
-                    navigate('/dashboard');
-                } else {
-                    console.error('El backend no devolvió un token válido', data);
-                    setError('Error al procesar la sesión');
-                }
-            } else {
-                setError('Correo o contraseña incorrectos');
-            }
+            await login({ correoElectronico, contrasena });
+            navigate('/dashboard');
         } catch (err) {
-            setError('Error de conexión con el servidor');
+            setError(err.message || 'Error de conexión con el servidor');
         }
     };
 

@@ -4,6 +4,7 @@ import KanbanColumn from './KanbanColumn';
 import { DndContext, closestCorners, DragOverlay } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 import toast from 'react-hot-toast';
+import { obtenerTareasProyecto, actualizarEstadoTarea, crearTarea } from '../../services/tareaService';
 
 const pesosPrioridad = {
     'ALTA': 1,
@@ -37,24 +38,15 @@ export default function KanbanBoard() {
             console.error("Error decodificando token", e);
         }
 
-        fetch(`http://localhost:8080/api/tareas/proyecto/${idProyecto}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
+        obtenerTareasProyecto(idProyecto)
+            .then(data => setTareas(data))
+            .catch(err => {
+                if (err.message === 'Sesión expirada o no autorizada') {
                     localStorage.removeItem('jwt_token');
                     navigate('/');
-                    throw new Error('Sesión expirada o no autorizada');
                 }
-                if (!res.ok) throw new Error('Error al cargar tareas');
-                return res.json();
-            })
-            .then(data => setTareas(data))
-            .catch(err => console.error("Error cargando tareas:", err));
+                console.error("Error cargando tareas:", err);
+            });
     }, [navigate, idProyecto]);
 
     const handleDragStart = (event) => {
@@ -80,60 +72,29 @@ export default function KanbanBoard() {
             )
         );
 
-        const token = localStorage.getItem('jwt_token');
-        fetch(`http://localhost:8080/api/tareas/${idTarea}/estado`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ estado: nuevoEstado })
-        })
-        .then(res => {
-            if (res.ok) {
-                toast.success('Estado actualizado');
-            } else {
-                toast.error('Error actualizando estado');
-            }
-        })
+        actualizarEstadoTarea(idTarea, nuevoEstado)
+        .then(() => toast.success('Estado actualizado'))
         .catch(err => {
             toast.error('Error actualizando estado');
             console.error("Error actualizando tarea:", err);
         });
     };
 
+    const cerrarModalYLimpiar = () => {
+        setNuevaTarea({ titulo: '', descripcion: '', prioridad: 'MEDIA' });
+        setIsTaskModalOpen(false);
+    };
+
     const handleCrearTarea = async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('jwt_token');
         try {
-            const response = await fetch('http://localhost:8080/api/tareas', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    ...nuevaTarea,
-                    estado: 'PENDIENTE',
-                    proyecto: {
-                        idProyecto: parseInt(idProyecto)
-                    }
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setTareas([...tareas, data]);
-                setNuevaTarea({ titulo: '', descripcion: '', prioridad: 'MEDIA' });
-                setIsTaskModalOpen(false);
-                toast.success('Tarea creada correctamente');
-            } else {
-                toast.error('Error al guardar la tarea');
-                console.error("Error al crear tarea");
-            }
+            const data = await crearTarea(nuevaTarea, idProyecto);
+            setTareas([...tareas, data]);
+            cerrarModalYLimpiar();
+            toast.success('Tarea creada correctamente');
         } catch (error) {
             toast.error('Error al guardar la tarea');
-            console.error("Error de red:", error);
+            console.error("Error al crear tarea:", error);
         }
     };
 
@@ -226,7 +187,7 @@ export default function KanbanBoard() {
                             <div className="flex justify-end gap-3 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setIsTaskModalOpen(false)}
+                                    onClick={cerrarModalYLimpiar}
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
                                 >
                                     Cancelar
