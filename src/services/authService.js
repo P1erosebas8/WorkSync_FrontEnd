@@ -1,5 +1,4 @@
-const API_URL = 'http://localhost:8080/api/auth';
-
+const API_URL = "https://worksync-api-ikx6.onrender.com/api";
 export const login = async (credenciales) => {
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',

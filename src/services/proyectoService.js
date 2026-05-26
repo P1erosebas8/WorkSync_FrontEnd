@@ -1,5 +1,4 @@
-const API_URL = 'http://localhost:8080/api';
-
+const API_URL = "https://worksync-api-ikx6.onrender.com/api";
 // Función de utilidad para obtener los headers con el token
 const getAuthHeaders = () => {
     const token = localStorage.getItem('jwt_token');
