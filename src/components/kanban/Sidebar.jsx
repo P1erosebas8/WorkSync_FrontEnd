@@ -13,7 +13,7 @@ export default function Sidebar() {
         <aside className="w-[260px] bg-[#111318] text-white flex flex-col justify-between shrink-0">
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex gap-3 items-center mb-6">
-                    <div className="bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+                    <div className="bg-gradient-to-tr from-red-500 to-purple-500 rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
                         W
                     </div>
                     <div className="flex flex-col">

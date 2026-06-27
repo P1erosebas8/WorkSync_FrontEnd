@@ -1,4 +1,4 @@
-const API_URL = "https://worksync-api-ikx6.onrender.com/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 // Función de utilidad para obtener los headers con el token
 const getAuthHeaders = () => {
     const token = localStorage.getItem('jwt_token');
@@ -13,12 +13,12 @@ export const obtenerProyectos = async () => {
         method: 'GET',
         headers: getAuthHeaders()
     });
-    
+
     if (response.status === 401 || response.status === 403) {
         throw new Error('No autorizado');
     }
     if (!response.ok) throw new Error('Error al cargar proyectos');
-    
+
     return response.json();
 };
 
@@ -27,9 +27,9 @@ export const obtenerUsuarios = async () => {
         method: 'GET',
         headers: getAuthHeaders()
     });
-    
+
     if (!response.ok) throw new Error('Error obteniendo usuarios');
-    
+
     return response.json();
 };
 
@@ -39,9 +39,9 @@ export const crearProyecto = async (nuevoProyecto) => {
         headers: getAuthHeaders(),
         body: JSON.stringify(nuevoProyecto)
     });
-    
+
     if (!response.ok) throw new Error('Error al crear el proyecto');
-    
+
     return response.json();
 };
 
@@ -51,10 +51,21 @@ export const asignarUsuario = async (idUsuario, idProyecto) => {
         headers: getAuthHeaders(),
         body: JSON.stringify({ idUsuario, idProyecto })
     });
-    
+
     if (!response.ok) throw new Error('Error al asignar usuario');
-    
+
     return response;
+};
+
+export const obtenerAsignacionesProyecto = async (idProyecto) => {
+    const response = await fetch(`${API_URL}/asignaciones/proyecto/${idProyecto}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) throw new Error('Error al obtener asignaciones');
+
+    return response.json();
 };
 
 export const actualizarProyecto = async (idProyecto, proyectoData) => {
@@ -63,9 +74,9 @@ export const actualizarProyecto = async (idProyecto, proyectoData) => {
         headers: getAuthHeaders(),
         body: JSON.stringify(proyectoData)
     });
-    
+
     if (!response.ok) throw new Error('Error al actualizar el proyecto');
-    
+
     return response.json();
 };
 
@@ -74,8 +85,8 @@ export const archivarProyecto = async (idProyecto) => {
         method: 'PATCH',
         headers: getAuthHeaders()
     });
-    
+
     if (!response.ok) throw new Error('Error al cambiar el estado del proyecto');
-    
+
     return response.json();
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function TaskCard({ tarea, isOverlay }) {
+export default function TaskCard({ tarea, isOverlay, onClick }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: tarea.idTarea,
         data: { tarea },
@@ -24,22 +24,30 @@ export default function TaskCard({ tarea, isOverlay }) {
     return (
         <div
             ref={setNodeRef} style={style} {...(isOverlay ? {} : listeners)} {...(isOverlay ? {} : attributes)}
-            className={`bg-white p-4 rounded-xl border ${isDragging || isOverlay ? 'border-blue-500 shadow-xl scale-105 cursor-grabbing' : 'border-gray-200 shadow-sm cursor-grab'} hover:shadow-md transition-all group`}
+            className={`bg-[#1a1a1a] p-4 rounded-xl border ${isDragging || isOverlay ? 'border-red-500 shadow-xl scale-105 cursor-grabbing' : 'border-gray-800 shadow-sm cursor-grab'} hover:shadow-md transition-all group`}
         >
             <div className="flex items-start justify-between mb-2">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
                     {tarea.prioridad}
                 </span>
-                <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="material-symbols-outlined text-sm text-gray-400 hover:text-gray-600">edit</span>
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (onClick) onClick();
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-1 rounded-md hover:bg-gray-800"
+                    title="Ver detalles y comentarios"
+                >
+                    <span className="material-symbols-outlined text-sm text-gray-400 hover:text-red-400">forum</span>
                 </button>
             </div>
-            <h4 className="text-[14px] font-semibold text-gray-900 mb-2">{tarea.titulo}</h4>
-            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{tarea.descripcion}</p>
+            <h4 className="text-[14px] font-semibold text-gray-100 mb-2">{tarea.titulo}</h4>
+            <p className="text-xs text-gray-400 line-clamp-2 mb-3">{tarea.descripcion}</p>
             <div className="flex items-center justify-between mt-auto">
                 <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold text-gray-600">
-                        U
+                    <div className="w-6 h-6 rounded-full border-2 border-[#1a1a1a] bg-slate-800 flex items-center justify-center text-[10px] font-bold text-gray-300" title={tarea.nombreUsuario || 'Sin Asignar'}>
+                        {tarea.nombreUsuario ? tarea.nombreUsuario.charAt(0).toUpperCase() : '?'}
                     </div>
                 </div>
             </div>

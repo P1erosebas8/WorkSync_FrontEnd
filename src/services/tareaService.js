@@ -1,4 +1,4 @@
-const API_URL = "https://worksync-api-ikx6.onrender.com/api";
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
 const getAuthHeaders = () => {
     const token = localStorage.getItem('jwt_token');
     return {

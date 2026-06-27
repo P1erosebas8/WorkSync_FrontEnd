@@ -14,14 +14,16 @@ import {
 export default function Dashboard() {
     const [proyectos, setProyectos] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', descripcion: '' });
+    const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', descripcion: '', fechaLimite: '' });
     const [userRole, setUserRole] = useState(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [proyectoEdit, setProyectoEdit] = useState(null);
     const [usuariosList, setUsuariosList] = useState([]);
+    const [colaboradoresAsignadosIds, setColaboradoresAsignadosIds] = useState([]);
     const [selectedProjectId, setSelectedProjectId] = useState(null);
     const [selectedUsuarioId, setSelectedUsuarioId] = useState('');
+    const [confirmArchive, setConfirmArchive] = useState({ isOpen: false, idProyecto: null, isArchive: true });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,7 +59,7 @@ export default function Dashboard() {
     }, [navigate]);
 
     const cerrarModalYLimpiar = () => {
-        setNuevoProyecto({ nombre: '', descripcion: '' });
+        setNuevoProyecto({ nombre: '', descripcion: '', fechaLimite: '' });
         setIsModalOpen(false);
     };
 
@@ -105,12 +107,16 @@ export default function Dashboard() {
         }
     };
 
-    const handleArchivar = async (idProyecto) => {
-        if (!window.confirm("¿Estás seguro de cambiar el estado de este proyecto?")) return;
+    const handleArchivar = (idProyecto, isArchive) => {
+        setConfirmArchive({ isOpen: true, idProyecto, isArchive });
+    };
+
+    const executeArchive = async () => {
+        if (!confirmArchive.idProyecto) return;
         try {
-            await archivarProyecto(idProyecto);
+            await archivarProyecto(confirmArchive.idProyecto);
             setProyectos(prevProyectos => prevProyectos.map(p => 
-                p.idProyecto === idProyecto 
+                p.idProyecto === confirmArchive.idProyecto 
                     ? { ...p, estado: p.estado === 'ARCHIVADO' ? 'ACTIVO' : 'ARCHIVADO' } 
                     : p
             ));
@@ -119,6 +125,7 @@ export default function Dashboard() {
             toast.error('Error al cambiar el estado del proyecto');
             console.error("Error al actualizar proyecto:", error);
         }
+        setConfirmArchive({ isOpen: false, idProyecto: null, isArchive: true });
     };
 
     return (
@@ -133,8 +140,8 @@ export default function Dashboard() {
 
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-3">
-                        <h3 className="text-[18px] font-semibold">Proyectos Recientes</h3>
-                        <span className="bg-gray-200 px-2 py-0.5 rounded text-[11px] font-bold text-gray-600">{proyectos.length} Total</span>
+                        <h3 className="text-[18px] font-semibold text-gray-100">Proyectos Recientes</h3>
+                        <span className="bg-[#1a1a1a] border border-gray-800 px-2 py-0.5 rounded text-[11px] font-bold text-gray-400">{proyectos.length} Total</span>
                     </div>
                 </div>
 
@@ -144,27 +151,35 @@ export default function Dashboard() {
                             key={proyecto.idProyecto} 
                             proyecto={proyecto} 
                             userRole={userRole}
-                            onOpenAssignModal={(id) => {
+                            onOpenAssignModal={async (id) => {
                                 setSelectedProjectId(id);
+                                try {
+                                    const { obtenerAsignacionesProyecto } = await import('../services/proyectoService');
+                                    const asignaciones = await obtenerAsignacionesProyecto(id);
+                                    setColaboradoresAsignadosIds(asignaciones.map(a => a.usuario.idUsuario));
+                                } catch(e) {
+                                    console.error("Error cargando asignados", e);
+                                    setColaboradoresAsignadosIds([]);
+                                }
                                 setIsAssignModalOpen(true);
                             }}
                             onEdit={(p) => {
                                 setProyectoEdit(p);
                                 setIsEditModalOpen(true);
                             }}
-                            onArchive={handleArchivar}
+                            onArchive={(id) => handleArchivar(id, proyecto.estado !== 'ARCHIVADO')}
                         />
                     ))}
 
                     {(userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') && (
                         <div 
                             onClick={() => setIsModalOpen(true)}
-                            className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-blue-500 transition-all bg-white/50 min-h-[220px]"
+                            className="border-2 border-dashed border-gray-800 rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-red-500/50 transition-all bg-[#1a1a1a]/50 min-h-[220px]"
                         >
-                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                <span className="material-symbols-outlined">add_circle</span>
+                            <div className="w-12 h-12 rounded-full bg-[#121212] flex items-center justify-center mb-4 group-hover:bg-red-900/30 group-hover:text-red-400 transition-colors">
+                                <span className="material-symbols-outlined text-gray-400 group-hover:text-red-400">add_circle</span>
                             </div>
-                            <h4 className="text-[16px] font-bold text-gray-700 mb-1">Iniciar nuevo proyecto</h4>
+                            <h4 className="text-[16px] font-bold text-gray-200 mb-1">Iniciar nuevo proyecto</h4>
                             <p className="text-[12px] text-gray-500">Define objetivos, asigna equipo y comienza.</p>
                         </div>
                     )}
@@ -172,17 +187,17 @@ export default function Dashboard() {
             </section>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Nuevo Proyecto</h2>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl">
+                        <h2 className="text-2xl font-bold text-white mb-6">Nuevo Proyecto</h2>
                         
                         <form onSubmit={handleCrearProyecto} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Título del Proyecto</label>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Título del Proyecto</label>
                                 <input 
                                     type="text" 
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
                                     placeholder="Ej. Rediseño Web"
                                     value={nuevoProyecto.nombre}
                                     onChange={(e) => setNuevoProyecto({...nuevoProyecto, nombre: e.target.value})}
@@ -190,22 +205,32 @@ export default function Dashboard() {
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Descripción</label>
                                 <textarea 
                                     required
                                     rows="3"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none resize-none"
                                     placeholder="Objetivo principal del proyecto..."
                                     value={nuevoProyecto.descripcion}
                                     onChange={(e) => setNuevoProyecto({...nuevoProyecto, descripcion: e.target.value})}
                                 ></textarea>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Fecha Límite</label>
+                                <input 
+                                    type="date"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
+                                    value={nuevoProyecto.fechaLimite}
+                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, fechaLimite: e.target.value})}
+                                />
+                            </div>
+
                             <div className="flex justify-end gap-3 pt-4">
                                 <button 
                                     type="button"
                                     onClick={cerrarModalYLimpiar}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg font-medium transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -222,21 +247,21 @@ export default function Dashboard() {
             )}
 
             {isAssignModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Asignar Usuario a Proyecto</h2>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl">
+                        <h2 className="text-2xl font-bold text-white mb-6">Asignar Usuario a Proyecto</h2>
                         
                         <form onSubmit={handleAsignarUsuario} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Seleccionar Usuario</label>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Seleccionar Usuario</label>
                                 <select 
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
                                     value={selectedUsuarioId}
                                     onChange={(e) => setSelectedUsuarioId(e.target.value)}
                                 >
                                     <option value="" disabled>Elige un colaborador...</option>
-                                    {usuariosList.map(u => (
+                                    {usuariosList.filter(u => !colaboradoresAsignadosIds.includes(u.idUsuario)).map(u => (
                                         <option key={u.idUsuario} value={u.idUsuario}>
                                             {u.nombre || u.correoElectronico}
                                         </option>
@@ -251,13 +276,13 @@ export default function Dashboard() {
                                         setIsAssignModalOpen(false);
                                         setSelectedUsuarioId('');
                                     }}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg font-medium transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                                    className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
                                 >
                                     Asignar
                                 </button>
@@ -268,31 +293,41 @@ export default function Dashboard() {
             )}
 
             {isEditModalOpen && proyectoEdit && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Editar Proyecto</h2>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl">
+                        <h2 className="text-2xl font-bold text-white mb-6">Editar Proyecto</h2>
                         
                         <form onSubmit={handleActualizarProyecto} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre del Proyecto</label>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Nombre del Proyecto</label>
                                 <input 
                                     type="text" 
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
                                     value={proyectoEdit.nombre || ''}
                                     onChange={(e) => setProyectoEdit({...proyectoEdit, nombre: e.target.value})}
                                 />
                             </div>
                             
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Descripción</label>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Descripción</label>
                                 <textarea 
                                     required
                                     rows="3"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none resize-none"
                                     value={proyectoEdit.descripcion || ''}
                                     onChange={(e) => setProyectoEdit({...proyectoEdit, descripcion: e.target.value})}
                                 ></textarea>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Fecha Límite</label>
+                                <input 
+                                    type="date"
+                                    className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
+                                    value={proyectoEdit.fechaLimite || ''}
+                                    onChange={(e) => setProyectoEdit({...proyectoEdit, fechaLimite: e.target.value})}
+                                />
                             </div>
 
                             <div className="flex justify-end gap-3 pt-4">
@@ -302,18 +337,51 @@ export default function Dashboard() {
                                         setIsEditModalOpen(false);
                                         setProyectoEdit(null);
                                     }}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                                    className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg font-medium transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                                    className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
                                 >
                                     Guardar Cambios
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {confirmArchive.isOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
+                    <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl text-center">
+                        <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 ${confirmArchive.isArchive ? 'bg-red-900/30 text-red-400' : 'bg-green-900/30 text-green-400'}`}>
+                            <span className="material-symbols-outlined text-3xl">
+                                {confirmArchive.isArchive ? 'archive' : 'unarchive'}
+                            </span>
+                        </div>
+                        <h2 className="text-2xl font-bold text-white mb-2">
+                            {confirmArchive.isArchive ? '¿Archivar Proyecto?' : '¿Activar Proyecto?'}
+                        </h2>
+                        <p className="text-gray-400 mb-6">
+                            {confirmArchive.isArchive 
+                                ? 'El proyecto pasará a estado archivado y no admitirá modificaciones.' 
+                                : 'El proyecto volverá a estar activo y su equipo podrá trabajar en él.'}
+                        </p>
+                        <div className="flex justify-center gap-3">
+                            <button 
+                                onClick={() => setConfirmArchive({ isOpen: false, idProyecto: null, isArchive: true })}
+                                className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg font-medium transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                onClick={executeArchive}
+                                className={`px-6 py-2 text-white rounded-lg font-medium transition-colors ${confirmArchive.isArchive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                            >
+                                Confirmar
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
