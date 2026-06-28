@@ -11,8 +11,7 @@ export default function Login() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    // Estados para Recuperación de Contraseña
-    const [forgotStep, setForgotStep] = useState(0); // 0: cerrado, 1: correo, 2: otp, 3: nueva contra
+    const [forgotStep, setForgotStep] = useState(0);
     const [resetEmail, setResetEmail] = useState('');
     const [resetOtp, setResetOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -59,7 +58,7 @@ export default function Login() {
             } else if (forgotStep === 3) {
                 await resetPassword(resetEmail, resetOtp, newPassword);
                 toast.success("Contraseña actualizada exitosamente");
-                setForgotStep(0); // Cerrar modal
+                setForgotStep(0);
                 setCorreoElectronico(resetEmail);
             }
         } catch (err) {
@@ -195,7 +194,6 @@ export default function Login() {
                 </div>
             </div>
 
-            {/* MODAL PARA RECUPERAR CONTRASEÑA */}
             {forgotStep > 0 && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md relative animate-fade-in-up">

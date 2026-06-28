@@ -1,5 +1,4 @@
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
-// Función de utilidad para obtener los headers con el token
 const getAuthHeaders = () => {
     const token = localStorage.getItem('jwt_token');
     return {

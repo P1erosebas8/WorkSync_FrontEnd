@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import KanbanColumn from './KanbanColumn';
-import { DndContext, closestCorners, DragOverlay } from '@dnd-kit/core';
+import { DndContext, closestCorners, DragOverlay, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
 import toast from 'react-hot-toast';
@@ -29,6 +29,20 @@ export default function KanbanBoard() {
     const [nombreProyecto, setNombreProyecto] = useState('');
     const navigate = useNavigate();
     const { idProyecto } = useParams();
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
+            },
+        })
+    );
 
     useEffect(() => {
         const token = localStorage.getItem('jwt_token');
@@ -94,12 +108,12 @@ export default function KanbanBoard() {
         if (!tareaArrastrada || tareaArrastrada.estado === nuevoEstado) return;
 
         const isAdmin = userRole === 'ADMIN' || userRole === 'ROLE_ADMIN';
-        
+
         if (!isAdmin && tareaArrastrada.idResponsable !== currentUserId) {
             toast.error('Solo puedes mover tus propias tareas');
             return;
         }
-        
+
         if (!isAdmin && (nuevoEstado === 'BLOQUEADO' || nuevoEstado === 'COMPLETADO' || tareaArrastrada.estado === 'BLOQUEADO' || tareaArrastrada.estado === 'COMPLETADO')) {
             toast.error('Solo el administrador puede mover tareas bloqueadas o completadas');
             return;
@@ -170,7 +184,6 @@ export default function KanbanBoard() {
 
                 <div className="flex items-center gap-3 flex-1 justify-end">
 
-                    {/* Toggle Mis Tareas */}
                     <button
                         onClick={() => setShowOnlyMyTasks(!showOnlyMyTasks)}
                         className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${showOnlyMyTasks ? 'bg-red-900/30 text-red-400 border border-red-900/50' : 'bg-gray-800 text-gray-300 border border-transparent hover:bg-gray-700'}`}
@@ -206,6 +219,7 @@ export default function KanbanBoard() {
 
             <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 bg-[#121212]">
                 <DndContext
+                    sensors={sensors}
                     collisionDetection={closestCorners}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
@@ -250,7 +264,6 @@ export default function KanbanBoard() {
                 </DndContext>
             </div>
 
-            {/* Modal Nueva Tarea */}
             {isTaskModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
                     <div className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 w-full max-w-md shadow-2xl">
@@ -330,7 +343,6 @@ export default function KanbanBoard() {
                 </div>
             )}
 
-            {/* Modal Detalles y Comentarios */}
             {selectedTaskForDetails && (
                 <TaskModal
                     tarea={selectedTaskForDetails}

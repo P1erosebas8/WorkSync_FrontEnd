@@ -12,8 +12,7 @@ export default function Register() {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    // Estados para Verificación de Cuenta
-    const [verifyStep, setVerifyStep] = useState(0); // 0: form normal, 1: otp modal
+    const [verifyStep, setVerifyStep] = useState(0);
     const [verifyOtpCode, setVerifyOtpCode] = useState('');
     const [verifyLoading, setVerifyLoading] = useState(false);
 
@@ -40,7 +39,6 @@ export default function Register() {
                 contrasena,
                 rol: 'COLABORADOR'
             });
-            // En vez de navegar de inmediato, abrimos el modal
             toast.success("Cuenta creada. Revisa tu correo electrónico para el código OTP.");
             setVerifyStep(1);
         } catch (err) {
@@ -211,7 +209,6 @@ export default function Register() {
                 </div>
             </div>
 
-            {/* MODAL DE VERIFICACIÓN DE CUENTA */}
             {verifyStep === 1 && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-[#1a1a1a] border border-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md relative animate-fade-in-up">

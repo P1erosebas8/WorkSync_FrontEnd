@@ -4,20 +4,16 @@ import { getComentariosByTarea, createComentario } from '../../services/comentar
 import { getEvidenciasByTarea, uploadEvidencia, descargarEvidencia } from '../../services/evidenciaService';
 
 export default function TaskModal({ tarea, onClose }) {
-    const [activeTab, setActiveTab] = useState('comentarios'); // 'comentarios' | 'evidencias'
-    
-    // Comentarios
+    const [activeTab, setActiveTab] = useState('comentarios');
+
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [loadingComentarios, setLoadingComentarios] = useState(true);
-
-    // Evidencias
     const [evidencias, setEvidencias] = useState([]);
     const [loadingEvidencias, setLoadingEvidencias] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef(null);
-    
-    // Auth
+
     const token = localStorage.getItem('jwt_token');
     let idUsuarioActual = null;
     let nombreUsuarioActual = '';
@@ -32,11 +28,11 @@ export default function TaskModal({ tarea, onClose }) {
                 const role = decodedPayload.roles[0].authority || decodedPayload.roles[0];
                 isAdmin = role === 'ROLE_ADMIN' || role === 'ADMIN';
             }
-        } catch(e) {
+        } catch (e) {
             console.error("Error decodificando token en TaskModal", e);
         }
     }
-    
+
     const canInteract = isAdmin || tarea.idResponsable === idUsuarioActual;
     const commentsEndRef = useRef(null);
 
@@ -49,10 +45,7 @@ export default function TaskModal({ tarea, onClose }) {
         setLoadingComentarios(true);
         getComentariosByTarea(tarea.idTarea)
             .then(data => {
-                // asumiendo que data viene del más reciente al más antiguo o viceversa, aseguramos que el más antiguo sea primero
-                // si viene ordenado por fecha desc (más nuevo primero), lo invertimos
-                // para que el último esté abajo
-                const sorted = data.sort((a,b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion));
+                const sorted = data.sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion));
                 setComentarios(sorted);
                 scrollToBottom();
             })
@@ -121,7 +114,7 @@ export default function TaskModal({ tarea, onClose }) {
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
             <div className="bg-[#1a1a1a] rounded-xl w-full max-w-2xl h-[85vh] shadow-2xl flex flex-col overflow-hidden relative">
-                
+
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-800 shrink-0">
                     <div>
@@ -136,7 +129,7 @@ export default function TaskModal({ tarea, onClose }) {
                         <span className="material-symbols-outlined text-2xl">close</span>
                     </button>
                 </div>
-                
+
                 {/* Body - Descripción estática */}
                 <div className="p-6 border-b border-gray-800 bg-[#121212] shrink-0">
                     <h3 className="text-sm font-semibold text-gray-300 mb-2">Descripción</h3>
@@ -145,14 +138,14 @@ export default function TaskModal({ tarea, onClose }) {
 
                 {/* Tabs */}
                 <div className="flex border-b border-gray-800 px-6 shrink-0 pt-2 bg-[#121212]">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('comentarios')}
                         className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'comentarios' ? 'border-red-600 text-red-500' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
                     >
                         <span className="material-symbols-outlined text-sm">forum</span>
                         Comentarios ({comentarios.length})
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('evidencias')}
                         className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'evidencias' ? 'border-red-600 text-red-500' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
                     >
@@ -196,13 +189,13 @@ export default function TaskModal({ tarea, onClose }) {
                                         <h4 className="text-sm font-semibold text-red-400">Subir nueva evidencia</h4>
                                         <p className="text-xs text-red-500 mt-1">Adjunta un documento o imagen como prueba del trabajo.</p>
                                     </div>
-                                    <input 
-                                        type="file" 
-                                        ref={fileInputRef} 
-                                        onChange={handleFileUpload} 
-                                        className="hidden" 
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        className="hidden"
                                     />
-                                    <button 
+                                    <button
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={isUploading}
                                         className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400 flex items-center gap-2"
@@ -245,7 +238,6 @@ export default function TaskModal({ tarea, onClose }) {
                     )}
                 </div>
 
-                {/* Footer solo para comentarios */}
                 {activeTab === 'comentarios' && canInteract && (
                     <div className="p-4 bg-[#121212] border-t border-gray-800 shrink-0">
                         <form onSubmit={handleCrearComentario} className="flex gap-3">
@@ -256,8 +248,8 @@ export default function TaskModal({ tarea, onClose }) {
                                 placeholder="Escribe un comentario..."
                                 className="flex-1 px-4 py-2 bg-[#1a1a1a] border border-gray-800 text-white rounded-full focus:ring-2 focus:ring-red-500/50 outline-none text-sm"
                             />
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={!nuevoComentario.trim()}
                                 className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0"
                             >

@@ -11,6 +11,7 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
 
     const style = {
         opacity: isDragging && !isOverlay ? 0.3 : 1,
+        touchAction: 'none',
     };
 
     const prioridadColor = {
@@ -30,7 +31,7 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
                     {tarea.prioridad}
                 </span>
-                <button 
+                <button
                     onClick={(e) => {
                         e.stopPropagation();
                         if (onClick) onClick();
