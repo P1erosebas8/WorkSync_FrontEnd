@@ -8,7 +8,8 @@ import {
     crearProyecto, 
     asignarUsuario, 
     actualizarProyecto, 
-    archivarProyecto 
+    archivarProyecto,
+    obtenerMetricasGlobales
 } from '../services/proyectoService';
 
 export default function Dashboard() {
@@ -24,6 +25,7 @@ export default function Dashboard() {
     const [selectedProjectId, setSelectedProjectId] = useState(null);
     const [selectedUsuarioId, setSelectedUsuarioId] = useState('');
     const [confirmArchive, setConfirmArchive] = useState({ isOpen: false, projectId: null, isArchive: true });
+    const [globalMetrics, setGlobalMetrics] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,7 +39,12 @@ export default function Dashboard() {
             const payloadBase64 = token.split('.')[1];
             const decodedPayload = JSON.parse(atob(payloadBase64));
             if (decodedPayload.roles && decodedPayload.roles.length > 0) {
-                setUserRole(decodedPayload.roles[0].authority || decodedPayload.roles[0]);
+                const role = decodedPayload.roles[0].authority || decodedPayload.roles[0];
+                setUserRole(role);
+                
+                if (role.includes('ADMIN')) {
+                    obtenerMetricasGlobales().then(data => setGlobalMetrics(data)).catch(err => console.error(err));
+                }
             }
         } catch(e) {
             console.error("Error decodificando token", e);
@@ -137,6 +144,35 @@ export default function Dashboard() {
                         <p className="text-[16px] text-gray-300 mb-6">Selecciona un proyecto activo para entrar al Tablero Kanban y empezar a gestionar las tareas de tu equipo.</p>
                     </div>
                 </div>
+
+                {/* Global Metrics Dashboard for Admins */}
+                {userRole === 'ADMIN' && globalMetrics && (
+                    <div className="mb-8 p-6 bg-[#121212] rounded-2xl border border-gray-800 shadow-xl">
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-red-500">monitoring</span>
+                            KPIs Globales de Rendimiento
+                        </h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800/50">
+                                <div className="text-gray-400 text-sm font-medium mb-1">Proyectos Activos</div>
+                                <div className="text-3xl font-bold text-white">{globalMetrics.activeProjects}</div>
+                            </div>
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800/50">
+                                <div className="text-gray-400 text-sm font-medium mb-1">Total Tareas</div>
+                                <div className="text-3xl font-bold text-gray-200">{globalMetrics.totalTasks}</div>
+                            </div>
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800/50">
+                                <div className="text-gray-400 text-sm font-medium mb-1">Tareas Completadas</div>
+                                <div className="text-3xl font-bold text-green-500">{globalMetrics.completedTasks}</div>
+                            </div>
+                            <div className="bg-[#1a1a1a] p-4 rounded-xl border border-gray-800/50 relative overflow-hidden">
+                                <div className="relative z-10 text-gray-400 text-sm font-medium mb-1">Eficiencia Global</div>
+                                <div className="relative z-10 text-3xl font-bold text-amber-500">{globalMetrics.globalEfficiency}%</div>
+                                <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-red-600 to-green-500 transition-all duration-1000" style={{ width: `${globalMetrics.globalEfficiency}%` }}></div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-3">

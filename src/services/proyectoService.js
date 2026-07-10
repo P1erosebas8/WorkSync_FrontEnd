@@ -100,3 +100,14 @@ export const obtenerMetricasProyecto = async (projectId) => {
 
     return response.json();
 };
+
+export const obtenerMetricasGlobales = async () => {
+    const response = await fetch(`${API_URL}/proyectos/metricas/globales`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) throw new Error('Error al obtener métricas globales');
+
+    return response.json();
+};
