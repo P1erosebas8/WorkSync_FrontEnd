@@ -86,7 +86,7 @@ export default function KanbanBoard() {
         });
 
         obtenerAsignacionesProyecto(projectId)
-            .then(data => setColaboradores(data.map(a => a.usuario)))
+            .then(data => setColaboradores(data.map(a => a.user)))
             .catch(err => console.error("Error cargando colaboradores:", err));
     }, [navigate, projectId]);
 
@@ -312,10 +312,10 @@ export default function KanbanBoard() {
                                 <select
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
                                     value={nuevaTarea.assigneeId}
-                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, idResponsable: e.target.value })}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, assigneeId: e.target.value })}
                                 >
                                     <option value="">Sin asignar</option>
-                                    {colaboradores.map(user => (
+                                    {colaboradores.filter(u => u != null).map(user => (
                                         <option key={user.userId} value={user.userId}>
                                             {user.name}
                                         </option>

@@ -73,7 +73,7 @@ export default function TaskModal({ tarea, onClose }) {
         if (!idUsuarioActual) return toast.error("Usuario no identificado");
 
         createComentario({
-            contenido: nuevoComentario,
+            content: nuevoComentario,
             taskId: tarea.taskId,
             userId: idUsuarioActual
         }).then(data => {

@@ -156,7 +156,7 @@ export default function Dashboard() {
                                 try {
                                     const { obtenerAsignacionesProyecto } = await import('../services/proyectoService');
                                     const asignaciones = await obtenerAsignacionesProyecto(id);
-                                    setColaboradoresAsignadosIds(asignaciones.map(a => a.usuario.userId));
+                                    setColaboradoresAsignadosIds(asignaciones.map(a => a.user ? a.user.userId : null));
                                 } catch(e) {
                                     console.error("Error cargando asignados", e);
                                     setColaboradoresAsignadosIds([]);
