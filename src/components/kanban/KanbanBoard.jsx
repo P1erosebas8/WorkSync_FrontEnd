@@ -19,7 +19,7 @@ export default function KanbanBoard() {
     const [colaboradores, setColaboradores] = useState([]);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [selectedTaskForDetails, setSelectedTaskForDetails] = useState(null);
-    const [nuevaTarea, setNuevaTarea] = useState({ titulo: '', descripcion: '', prioridad: 'MEDIA', idResponsable: '' });
+    const [nuevaTarea, setNuevaTarea] = useState({ title: '', description: '', priority: 'MEDIA', idResponsable: '' });
     const [userRole, setUserRole] = useState(null);
     const [activeTask, setActiveTask] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,7 +28,7 @@ export default function KanbanBoard() {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [nombreProyecto, setNombreProyecto] = useState('');
     const navigate = useNavigate();
-    const { idProyecto } = useParams();
+    const { projectId } = useParams();
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -61,14 +61,14 @@ export default function KanbanBoard() {
                     setShowOnlyMyTasks(true);
                 }
             }
-            if (decodedPayload.idUsuario) {
-                setCurrentUserId(decodedPayload.idUsuario);
+            if (decodedPayload.userId) {
+                setCurrentUserId(decodedPayload.userId);
             }
         } catch (e) {
             console.error("Error decodificando token", e);
         }
 
-        obtenerTareasProyecto(idProyecto)
+        obtenerTareasProyecto(projectId)
             .then(data => setTareas(data))
             .catch(err => {
                 if (err.message === 'Sesión expirada o no autorizada') {
@@ -80,19 +80,19 @@ export default function KanbanBoard() {
 
         import('../../services/proyectoService').then(({ obtenerProyectos }) => {
             obtenerProyectos().then(proyectos => {
-                const p = proyectos.find(p => p.idProyecto == idProyecto);
-                if (p) setNombreProyecto(p.nombre);
+                const p = proyectos.find(p => p.projectId == projectId);
+                if (p) setNombreProyecto(p.name);
             });
         });
 
-        obtenerAsignacionesProyecto(idProyecto)
+        obtenerAsignacionesProyecto(projectId)
             .then(data => setColaboradores(data.map(a => a.usuario)))
             .catch(err => console.error("Error cargando colaboradores:", err));
-    }, [navigate, idProyecto]);
+    }, [navigate, projectId]);
 
     const handleDragStart = (event) => {
         const { active } = event;
-        const task = tareas.find(t => t.idTarea === active.id);
+        const task = tareas.find(t => t.taskId === active.id);
         setActiveTask(task);
     };
 
@@ -101,31 +101,31 @@ export default function KanbanBoard() {
         const { active, over } = event;
         if (!over) return;
 
-        const idTarea = active.id;
+        const taskId = active.id;
         const nuevoEstado = over.id;
         const tareaArrastrada = active.data.current?.tarea;
 
-        if (!tareaArrastrada || tareaArrastrada.estado === nuevoEstado) return;
+        if (!tareaArrastrada || tareaArrastrada.status === nuevoEstado) return;
 
         const isAdmin = userRole === 'ADMIN' || userRole === 'ROLE_ADMIN';
 
-        if (!isAdmin && tareaArrastrada.idResponsable !== currentUserId) {
+        if (!isAdmin && tareaArrastrada.assigneeId !== currentUserId) {
             toast.error('Solo puedes mover tus propias tareas');
             return;
         }
 
-        if (!isAdmin && (nuevoEstado === 'BLOQUEADO' || nuevoEstado === 'COMPLETADO' || tareaArrastrada.estado === 'BLOQUEADO' || tareaArrastrada.estado === 'COMPLETADO')) {
+        if (!isAdmin && (nuevoEstado === 'BLOQUEADO' || nuevoEstado === 'COMPLETADO' || tareaArrastrada.status === 'BLOQUEADO' || tareaArrastrada.status === 'COMPLETADO')) {
             toast.error('Solo el administrador puede mover tareas bloqueadas o completadas');
             return;
         }
 
         setTareas(tareasPrevias =>
             tareasPrevias.map(t =>
-                t.idTarea === idTarea ? { ...t, estado: nuevoEstado } : t
+                t.taskId === taskId ? { ...t, status: nuevoEstado } : t
             )
         );
 
-        actualizarEstadoTarea(idTarea, nuevoEstado)
+        actualizarEstadoTarea(taskId, nuevoEstado)
             .then(() => toast.success('Estado actualizado'))
             .catch(err => {
                 toast.error('Error actualizando estado');
@@ -134,14 +134,14 @@ export default function KanbanBoard() {
     };
 
     const cerrarModalYLimpiar = () => {
-        setNuevaTarea({ titulo: '', descripcion: '', prioridad: 'MEDIA', idResponsable: '' });
+        setNuevaTarea({ title: '', description: '', priority: 'MEDIA', idResponsable: '' });
         setIsTaskModalOpen(false);
     };
 
     const handleCrearTarea = async (e) => {
         e.preventDefault();
         try {
-            const data = await crearTarea(nuevaTarea, idProyecto);
+            const data = await crearTarea(nuevaTarea, projectId);
             setTareas([...tareas, data]);
             cerrarModalYLimpiar();
             toast.success('Tarea creada correctamente');
@@ -152,34 +152,34 @@ export default function KanbanBoard() {
     };
 
     const tareasFiltradas = tareas.filter(t => {
-        const matchSearch = t.titulo.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchPriority = filterPriority === 'TODAS' || t.prioridad === filterPriority;
-        const matchUser = !showOnlyMyTasks || t.idResponsable === currentUserId;
+        const matchSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchPriority = filterPriority === 'TODAS' || t.priority === filterPriority;
+        const matchUser = !showOnlyMyTasks || t.assigneeId === currentUserId;
         return matchSearch && matchPriority && matchUser;
     });
 
     const tareasPendientes = tareasFiltradas
-        .filter(t => t.estado === 'PENDIENTE')
-        .sort((a, b) => pesosPrioridad[a.prioridad] - pesosPrioridad[b.prioridad]);
+        .filter(t => t.status === 'PENDIENTE')
+        .sort((a, b) => pesosPrioridad[a.priority] - pesosPrioridad[b.priority]);
     const tareasEnProgreso = tareasFiltradas
-        .filter(t => t.estado === 'EN_PROGRESO')
-        .sort((a, b) => pesosPrioridad[a.prioridad] - pesosPrioridad[b.prioridad]);
+        .filter(t => t.status === 'EN_PROGRESO')
+        .sort((a, b) => pesosPrioridad[a.priority] - pesosPrioridad[b.priority]);
     const tareasEnRevision = tareasFiltradas
-        .filter(t => t.estado === 'EN_REVISION')
-        .sort((a, b) => pesosPrioridad[a.prioridad] - pesosPrioridad[b.prioridad]);
+        .filter(t => t.status === 'EN_REVISION')
+        .sort((a, b) => pesosPrioridad[a.priority] - pesosPrioridad[b.priority]);
     const tareasBloqueadas = tareasFiltradas
-        .filter(t => t.estado === 'BLOQUEADO')
-        .sort((a, b) => pesosPrioridad[a.prioridad] - pesosPrioridad[b.prioridad]);
+        .filter(t => t.status === 'BLOQUEADO')
+        .sort((a, b) => pesosPrioridad[a.priority] - pesosPrioridad[b.priority]);
     const tareasCompletadas = tareasFiltradas
-        .filter(t => t.estado === 'COMPLETADO')
-        .sort((a, b) => pesosPrioridad[a.prioridad] - pesosPrioridad[b.prioridad]);
+        .filter(t => t.status === 'COMPLETADO')
+        .sort((a, b) => pesosPrioridad[a.priority] - pesosPrioridad[b.priority]);
 
     return (
         <div className="flex h-full flex-col min-w-0">
             <header className="flex items-center justify-between border-b border-gray-800 px-6 h-16 bg-[#1a1a1a] shrink-0 gap-4">
                 <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-2xl text-gray-200">grid_view</span>
-                    <h2 className="text-lg font-bold truncate hidden sm:block text-gray-100">Proyecto {nombreProyecto || idProyecto}</h2>
+                    <h2 className="text-lg font-bold truncate hidden sm:block text-gray-100">Proyecto {nombreProyecto || projectId}</h2>
                 </div>
 
                 <div className="flex items-center gap-3 flex-1 justify-end">
@@ -277,8 +277,8 @@ export default function KanbanBoard() {
                                     required
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
                                     placeholder="Ej. Integrar pasarela de pago"
-                                    value={nuevaTarea.titulo}
-                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, titulo: e.target.value })}
+                                    value={nuevaTarea.title}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, title: e.target.value })}
                                 />
                             </div>
 
@@ -289,8 +289,8 @@ export default function KanbanBoard() {
                                     rows="3"
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none resize-none"
                                     placeholder="Detalles de la tarea..."
-                                    value={nuevaTarea.descripcion}
-                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, descripcion: e.target.value })}
+                                    value={nuevaTarea.description}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, description: e.target.value })}
                                 ></textarea>
                             </div>
 
@@ -298,8 +298,8 @@ export default function KanbanBoard() {
                                 <label className="block text-sm font-semibold text-gray-300 mb-1">Prioridad</label>
                                 <select
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
-                                    value={nuevaTarea.prioridad}
-                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, prioridad: e.target.value })}
+                                    value={nuevaTarea.priority}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, priority: e.target.value })}
                                 >
                                     <option value="ALTA">Alta</option>
                                     <option value="MEDIA">Media</option>
@@ -311,13 +311,13 @@ export default function KanbanBoard() {
                                 <label className="block text-sm font-semibold text-gray-300 mb-1">Responsable</label>
                                 <select
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
-                                    value={nuevaTarea.idResponsable}
+                                    value={nuevaTarea.assigneeId}
                                     onChange={(e) => setNuevaTarea({ ...nuevaTarea, idResponsable: e.target.value })}
                                 >
                                     <option value="">Sin asignar</option>
                                     {colaboradores.map(user => (
-                                        <option key={user.idUsuario} value={user.idUsuario}>
-                                            {user.nombre}
+                                        <option key={user.userId} value={user.userId}>
+                                            {user.name}
                                         </option>
                                     ))}
                                 </select>

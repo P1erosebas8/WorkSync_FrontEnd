@@ -7,8 +7,8 @@ const getAuthHeaders = () => {
     };
 };
 
-export const getComentariosByTarea = async (idTarea) => {
-    const response = await fetch(`${API_URL}/comentarios/tarea/${idTarea}`, {
+export const getComentariosByTarea = async (taskId) => {
+    const response = await fetch(`${API_URL}/comentarios/tarea/${taskId}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });

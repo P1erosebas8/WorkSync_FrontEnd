@@ -7,8 +7,8 @@ const getAuthHeaders = () => {
     };
 };
 
-export const obtenerTareasProyecto = async (idProyecto) => {
-    const response = await fetch(`${API_URL}/tareas/proyecto/${idProyecto}`, {
+export const obtenerTareasProyecto = async (projectId) => {
+    const response = await fetch(`${API_URL}/tareas/proyecto/${projectId}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });
@@ -21,11 +21,11 @@ export const obtenerTareasProyecto = async (idProyecto) => {
     return response.json();
 };
 
-export const actualizarEstadoTarea = async (idTarea, nuevoEstado) => {
-    const response = await fetch(`${API_URL}/tareas/${idTarea}/estado`, {
+export const actualizarEstadoTarea = async (taskId, nuevoEstado) => {
+    const response = await fetch(`${API_URL}/tareas/${taskId}/estado`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ estado: nuevoEstado })
+        body: JSON.stringify({ status: nuevoEstado })
     });
 
     if (!response.ok) throw new Error('Error actualizando estado');
@@ -33,14 +33,14 @@ export const actualizarEstadoTarea = async (idTarea, nuevoEstado) => {
     return response;
 };
 
-export const crearTarea = async (nuevaTarea, idProyecto) => {
+export const crearTarea = async (nuevaTarea, projectId) => {
     const response = await fetch(`${API_URL}/tareas`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
             ...nuevaTarea,
-            estado: 'PENDIENTE',
-            idProyecto: parseInt(idProyecto)
+            status: 'PENDIENTE',
+            projectId: parseInt(projectId)
         })
     });
 

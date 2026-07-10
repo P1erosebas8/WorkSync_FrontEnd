@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 export default function TaskCard({ tarea, isOverlay, onClick }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-        id: tarea.idTarea,
+        id: tarea.taskId,
         data: { tarea },
         disabled: isOverlay
     });
@@ -20,7 +20,7 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
         'BAJA': 'bg-green-100 text-green-700 border-green-200'
     };
 
-    const colorClass = prioridadColor[tarea.prioridad] || prioridadColor.MEDIA;
+    const colorClass = prioridadColor[tarea.priority] || prioridadColor.MEDIA;
 
     return (
         <div
@@ -29,7 +29,7 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
         >
             <div className="flex items-start justify-between mb-2">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
-                    {tarea.prioridad}
+                    {tarea.priority}
                 </span>
                 <button
                     onClick={(e) => {
@@ -43,8 +43,8 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
                     <span className="material-symbols-outlined text-sm text-gray-400 hover:text-red-400">forum</span>
                 </button>
             </div>
-            <h4 className="text-[14px] font-semibold text-gray-100 mb-2">{tarea.titulo}</h4>
-            <p className="text-xs text-gray-400 line-clamp-2 mb-3">{tarea.descripcion}</p>
+            <h4 className="text-[14px] font-semibold text-gray-100 mb-2">{tarea.title}</h4>
+            <p className="text-xs text-gray-400 line-clamp-2 mb-3">{tarea.description}</p>
             <div className="flex items-center justify-between mt-auto">
                 <div className="flex -space-x-2">
                     <div className="w-6 h-6 rounded-full border-2 border-[#1a1a1a] bg-slate-800 flex items-center justify-center text-[10px] font-bold text-gray-300" title={tarea.nombreUsuario || 'Sin Asignar'}>

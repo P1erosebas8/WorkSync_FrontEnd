@@ -44,11 +44,11 @@ export const crearProyecto = async (nuevoProyecto) => {
     return response.json();
 };
 
-export const asignarUsuario = async (idUsuario, idProyecto) => {
+export const asignarUsuario = async (userId, projectId) => {
     const response = await fetch(`${API_URL}/asignaciones`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ idUsuario, idProyecto })
+        body: JSON.stringify({ userId, projectId })
     });
 
     if (!response.ok) throw new Error('Error al asignar usuario');
@@ -56,8 +56,8 @@ export const asignarUsuario = async (idUsuario, idProyecto) => {
     return response;
 };
 
-export const obtenerAsignacionesProyecto = async (idProyecto) => {
-    const response = await fetch(`${API_URL}/asignaciones/proyecto/${idProyecto}`, {
+export const obtenerAsignacionesProyecto = async (projectId) => {
+    const response = await fetch(`${API_URL}/asignaciones/proyecto/${projectId}`, {
         method: 'GET',
         headers: getAuthHeaders()
     });
@@ -67,8 +67,8 @@ export const obtenerAsignacionesProyecto = async (idProyecto) => {
     return response.json();
 };
 
-export const actualizarProyecto = async (idProyecto, proyectoData) => {
-    const response = await fetch(`${API_URL}/proyectos/${idProyecto}`, {
+export const actualizarProyecto = async (projectId, proyectoData) => {
+    const response = await fetch(`${API_URL}/proyectos/${projectId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(proyectoData)
@@ -79,8 +79,8 @@ export const actualizarProyecto = async (idProyecto, proyectoData) => {
     return response.json();
 };
 
-export const archivarProyecto = async (idProyecto) => {
-    const response = await fetch(`${API_URL}/proyectos/${idProyecto}/archivar`, {
+export const archivarProyecto = async (projectId) => {
+    const response = await fetch(`${API_URL}/proyectos/${projectId}/archivar`, {
         method: 'PATCH',
         headers: getAuthHeaders()
     });

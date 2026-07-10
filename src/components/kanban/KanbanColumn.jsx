@@ -24,7 +24,7 @@ export default function KanbanColumn({ id, titulo, tareas, onAddTask, onTaskClic
                 className={`flex-1 flex flex-col gap-3 overflow-y-auto pb-6 rounded-xl transition-colors ${isOver ? 'bg-[#1a1a1a]/50 outline-dashed outline-2 outline-red-900/50' : ''}`}
             >
                 {tareas.length > 0 ? (
-                    tareas.map(tarea => <TaskCard key={tarea.idTarea} tarea={tarea} onClick={() => onTaskClick && onTaskClick(tarea)} />)
+                    tareas.map(tarea => <TaskCard key={tarea.taskId} tarea={tarea} onClick={() => onTaskClick && onTaskClick(tarea)} />)
                 ) : (
                     <div className="h-32 w-full rounded-xl flex items-center justify-center bg-[#1a1a1a]/30 border-2 border-dashed border-gray-800">
                         <p className="text-gray-500 text-sm italic">Sin tareas</p>

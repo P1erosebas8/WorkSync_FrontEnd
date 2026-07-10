@@ -6,8 +6,8 @@ const getAuthHeaders = () => {
     };
 };
 
-export const getEvidenciasByTarea = async (idTarea) => {
-    const response = await fetch(`${API_URL}/evidencias/tarea/${idTarea}`, {
+export const getEvidenciasByTarea = async (taskId) => {
+    const response = await fetch(`${API_URL}/evidencias/tarea/${taskId}`, {
         method: 'GET',
         headers: {
             ...getAuthHeaders(),
@@ -18,10 +18,10 @@ export const getEvidenciasByTarea = async (idTarea) => {
     return response.json();
 };
 
-export const uploadEvidencia = async (idTarea, idUsuario, file) => {
+export const uploadEvidencia = async (taskId, userId, file) => {
     const formData = new FormData();
-    formData.append('idTarea', idTarea);
-    formData.append('idUsuario', idUsuario);
+    formData.append('taskId', taskId);
+    formData.append('userId', userId);
     formData.append('file', file);
 
     const response = await fetch(`${API_URL}/evidencias`, {

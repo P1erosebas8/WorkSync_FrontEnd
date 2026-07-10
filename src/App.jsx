@@ -18,7 +18,7 @@ export default function App() {
 
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/kanban/:idProyecto" element={<KanbanBoard />} />
+            <Route path="/kanban/:projectId" element={<KanbanBoard />} />
             <Route path="/kanban" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>

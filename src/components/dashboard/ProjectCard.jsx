@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onEdit, onArchive }) {
     const navigate = useNavigate();
-    const estado = proyecto.estado || 'ACTIVO';
+    const estado = proyecto.status || 'ACTIVO';
     const bgCard = estado === 'ARCHIVADO' ? 'bg-[#1a1a1a] opacity-60 grayscale' : 'bg-[#1a1a1a]';
     const bgColor = estado === 'ARCHIVADO' ? 'bg-gray-800 text-gray-400' : 'bg-green-900/30 text-green-400';
 
     return (
         <div
-            onClick={() => navigate(`/kanban/${proyecto.idProyecto}`)}
+            onClick={() => navigate(`/kanban/${proyecto.projectId}`)}
             className={`group border border-gray-800 rounded-xl p-6 hover:shadow-lg transition-all duration-300 relative cursor-pointer ${bgCard}`}
         >
             <div className="flex justify-between items-start mb-4">
@@ -23,9 +23,9 @@ export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onE
                 </span>
             </div>
 
-            <h4 className="text-[18px] font-semibold text-gray-100 mb-2 line-clamp-1">{proyecto.nombre}</h4>
+            <h4 className="text-[18px] font-semibold text-gray-100 mb-2 line-clamp-1">{proyecto.name}</h4>
             <p className="text-[14px] text-gray-400 mb-6 line-clamp-2 h-10">
-                {proyecto.descripcion || 'Sin descripción'}
+                {proyecto.description || 'Sin descripción'}
             </p>
 
             <div className="flex items-center justify-between pt-6 border-t border-gray-800">
@@ -47,7 +47,7 @@ export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onE
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onArchive(proyecto.idProyecto);
+                                    onArchive(proyecto.projectId);
                                 }}
                                 className={`w-7 h-7 rounded-full border border-gray-800 flex items-center justify-center transition-colors ${estado === 'ARCHIVADO' ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50' : 'bg-red-900/30 text-red-400 hover:bg-red-900/50'}`}
                                 title={estado === 'ARCHIVADO' ? 'Activar Proyecto' : 'Archivar Proyecto'}
@@ -59,7 +59,7 @@ export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onE
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    onOpenAssignModal(proyecto.idProyecto);
+                                    onOpenAssignModal(proyecto.projectId);
                                 }}
                                 className="w-7 h-7 rounded-full bg-red-900/30 border border-gray-800 flex items-center justify-center text-red-400 hover:bg-red-900/50 transition-colors"
                                 title="Asignar Equipo"
@@ -71,7 +71,7 @@ export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onE
                 </div>
                 <span className="text-[11px] font-medium text-gray-500 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                    {proyecto.fechaCreacion ? new Date(proyecto.fechaCreacion).toLocaleDateString() : ''}
+                    {proyecto.creationDate ? new Date(proyecto.creationDate).toLocaleDateString() : ''}
                 </span>
             </div>
             <div className="absolute inset-0 border-2 border-transparent group-hover:border-red-500/10 rounded-xl pointer-events-none transition-all"></div>

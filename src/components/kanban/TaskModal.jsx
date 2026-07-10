@@ -22,8 +22,8 @@ export default function TaskModal({ tarea, onClose }) {
         try {
             const payloadBase64 = token.split('.')[1];
             const decodedPayload = JSON.parse(atob(payloadBase64));
-            idUsuarioActual = decodedPayload.idUsuario;
-            nombreUsuarioActual = decodedPayload.nombre || decodedPayload.sub;
+            idUsuarioActual = decodedPayload.userId;
+            nombreUsuarioActual = decodedPayload.name || decodedPayload.sub;
             if (decodedPayload.roles && decodedPayload.roles.length > 0) {
                 const role = decodedPayload.roles[0].authority || decodedPayload.roles[0];
                 isAdmin = role === 'ROLE_ADMIN' || role === 'ADMIN';
@@ -33,19 +33,19 @@ export default function TaskModal({ tarea, onClose }) {
         }
     }
 
-    const canInteract = isAdmin || tarea.idResponsable === idUsuarioActual;
+    const canInteract = isAdmin || tarea.assigneeId === idUsuarioActual;
     const commentsEndRef = useRef(null);
 
     useEffect(() => {
         cargarComentarios();
         cargarEvidencias();
-    }, [tarea.idTarea]);
+    }, [tarea.taskId]);
 
     const cargarComentarios = () => {
         setLoadingComentarios(true);
-        getComentariosByTarea(tarea.idTarea)
+        getComentariosByTarea(tarea.taskId)
             .then(data => {
-                const sorted = data.sort((a, b) => new Date(a.fechaCreacion) - new Date(b.fechaCreacion));
+                const sorted = data.sort((a, b) => new Date(a.creationDate) - new Date(b.creationDate));
                 setComentarios(sorted);
                 scrollToBottom();
             })
@@ -61,7 +61,7 @@ export default function TaskModal({ tarea, onClose }) {
 
     const cargarEvidencias = () => {
         setLoadingEvidencias(true);
-        getEvidenciasByTarea(tarea.idTarea)
+        getEvidenciasByTarea(tarea.taskId)
             .then(data => setEvidencias(data))
             .catch(err => toast.error("Error al cargar evidencias"))
             .finally(() => setLoadingEvidencias(false));
@@ -74,8 +74,8 @@ export default function TaskModal({ tarea, onClose }) {
 
         createComentario({
             contenido: nuevoComentario,
-            idTarea: tarea.idTarea,
-            idUsuario: idUsuarioActual
+            taskId: tarea.taskId,
+            userId: idUsuarioActual
         }).then(data => {
             setComentarios([...comentarios, data]);
             setNuevoComentario('');
@@ -90,7 +90,7 @@ export default function TaskModal({ tarea, onClose }) {
         if (!idUsuarioActual) return toast.error("Usuario no identificado");
 
         setIsUploading(true);
-        uploadEvidencia(tarea.idTarea, idUsuarioActual, file)
+        uploadEvidencia(tarea.taskId, idUsuarioActual, file)
             .then(data => {
                 setEvidencias([data, ...evidencias]);
                 toast.success("Archivo subido correctamente");
@@ -104,8 +104,8 @@ export default function TaskModal({ tarea, onClose }) {
 
     const handleDownload = (e, ev) => {
         e.preventDefault();
-        if (ev.urlDescarga) {
-            window.open(ev.urlDescarga, '_blank');
+        if (ev.downloadUrl) {
+            window.open(ev.downloadUrl, '_blank');
         } else {
             toast.error("El archivo no tiene una URL válida");
         }
@@ -118,10 +118,10 @@ export default function TaskModal({ tarea, onClose }) {
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-800 shrink-0">
                     <div>
-                        <h2 className="text-xl font-bold text-white truncate pr-4">{tarea.titulo}</h2>
+                        <h2 className="text-xl font-bold text-white truncate pr-4">{tarea.title}</h2>
                         <div className="text-xs text-gray-400 mt-1 flex gap-3">
-                            <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.prioridad}</span>
-                            <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.estado}</span>
+                            <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
+                            <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.status}</span>
                             <span>Asignado a: {tarea.nombreUsuario || 'Nadie'}</span>
                         </div>
                     </div>
@@ -133,7 +133,7 @@ export default function TaskModal({ tarea, onClose }) {
                 {/* Body - Descripción estática */}
                 <div className="p-6 border-b border-gray-800 bg-[#121212] shrink-0">
                     <h3 className="text-sm font-semibold text-gray-300 mb-2">Descripción</h3>
-                    <p className="text-gray-400 text-sm whitespace-pre-wrap">{tarea.descripcion}</p>
+                    <p className="text-gray-400 text-sm whitespace-pre-wrap">{tarea.description}</p>
                 </div>
 
                 {/* Tabs */}
@@ -164,16 +164,16 @@ export default function TaskModal({ tarea, onClose }) {
                                 <div className="text-center text-sm text-gray-500 py-10">Sin comentarios aún.</div>
                             ) : (
                                 comentarios.map(com => (
-                                    <div key={com.idComentario} className={`flex gap-3 ${com.idUsuario === idUsuarioActual ? 'flex-row-reverse' : ''}`}>
+                                    <div key={com.commentId} className={`flex gap-3 ${com.userId === idUsuarioActual ? 'flex-row-reverse' : ''}`}>
                                         <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs shrink-0" title={com.nombreUsuario}>
                                             {com.nombreUsuario ? com.nombreUsuario.charAt(0).toUpperCase() : '?'}
                                         </div>
-                                        <div className={`flex flex-col max-w-[75%] ${com.idUsuario === idUsuarioActual ? 'items-end' : 'items-start'}`}>
+                                        <div className={`flex flex-col max-w-[75%] ${com.userId === idUsuarioActual ? 'items-end' : 'items-start'}`}>
                                             <span className="text-[10px] text-gray-500 mb-1">
-                                                {com.nombreUsuario} • {new Date(com.fechaCreacion).toLocaleString()}
+                                                {com.nombreUsuario} • {new Date(com.creationDate).toLocaleString()}
                                             </span>
-                                            <div className={`p-3 rounded-lg text-sm ${com.idUsuario === idUsuarioActual ? 'bg-red-600 text-white rounded-tr-none' : 'bg-[#242424] text-gray-200 rounded-tl-none'}`}>
-                                                {com.contenido}
+                                            <div className={`p-3 rounded-lg text-sm ${com.userId === idUsuarioActual ? 'bg-red-600 text-white rounded-tr-none' : 'bg-[#242424] text-gray-200 rounded-tl-none'}`}>
+                                                {com.content}
                                             </div>
                                         </div>
                                     </div>
@@ -213,18 +213,18 @@ export default function TaskModal({ tarea, onClose }) {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                     {evidencias.map(ev => (
-                                        <div key={ev.idEvidencia} className="flex items-start gap-3 p-3 border border-gray-800 bg-[#242424] rounded-lg hover:border-red-500/50 transition-colors">
+                                        <div key={ev.evidenceId} className="flex items-start gap-3 p-3 border border-gray-800 bg-[#242424] rounded-lg hover:border-red-500/50 transition-colors">
                                             <div className="w-10 h-10 rounded bg-[#1a1a1a] flex items-center justify-center shrink-0">
                                                 <span className="material-symbols-outlined text-gray-500">
-                                                    {ev.tipoMime.includes('image') ? 'image' : 'description'}
+                                                    {ev.mimeType.includes('image') ? 'image' : 'description'}
                                                 </span>
                                             </div>
                                             <div className="flex-1 min-w-0 cursor-pointer" onClick={(e) => handleDownload(e, ev)}>
                                                 <span className="text-sm font-medium text-red-600 hover:underline truncate block">
-                                                    {ev.nombreArchivo}
+                                                    {ev.fileName}
                                                 </span>
                                                 <p className="text-[10px] text-gray-500 mt-0.5">
-                                                    Subido por {ev.nombreUsuario} el {new Date(ev.fechaSubida).toLocaleDateString()}
+                                                    Subido por {ev.nombreUsuario} el {new Date(ev.uploadDate).toLocaleDateString()}
                                                 </p>
                                             </div>
                                             <button onClick={(e) => handleDownload(e, ev)} className="text-gray-400 hover:text-red-600 shrink-0" title="Descargar">

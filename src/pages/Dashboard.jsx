@@ -14,7 +14,7 @@ import {
 export default function Dashboard() {
     const [proyectos, setProyectos] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', descripcion: '', fechaLimite: '' });
+    const [nuevoProyecto, setNuevoProyecto] = useState({ name: '', description: '', deadline: '' });
     const [userRole, setUserRole] = useState(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function Dashboard() {
     const [colaboradoresAsignadosIds, setColaboradoresAsignadosIds] = useState([]);
     const [selectedProjectId, setSelectedProjectId] = useState(null);
     const [selectedUsuarioId, setSelectedUsuarioId] = useState('');
-    const [confirmArchive, setConfirmArchive] = useState({ isOpen: false, idProyecto: null, isArchive: true });
+    const [confirmArchive, setConfirmArchive] = useState({ isOpen: false, projectId: null, isArchive: true });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -59,7 +59,7 @@ export default function Dashboard() {
     }, [navigate]);
 
     const cerrarModalYLimpiar = () => {
-        setNuevoProyecto({ nombre: '', descripcion: '', fechaLimite: '' });
+        setNuevoProyecto({ name: '', description: '', deadline: '' });
         setIsModalOpen(false);
     };
 
@@ -96,8 +96,8 @@ export default function Dashboard() {
     const handleActualizarProyecto = async (e) => {
         e.preventDefault();
         try {
-            const updated = await actualizarProyecto(proyectoEdit.idProyecto, proyectoEdit);
-            setProyectos(proyectos.map(p => p.idProyecto === updated.idProyecto ? updated : p));
+            const updated = await actualizarProyecto(proyectoEdit.projectId, proyectoEdit);
+            setProyectos(proyectos.map(p => p.projectId === updated.projectId ? updated : p));
             setIsEditModalOpen(false);
             setProyectoEdit(null);
             toast.success('Proyecto actualizado');
@@ -107,17 +107,17 @@ export default function Dashboard() {
         }
     };
 
-    const handleArchivar = (idProyecto, isArchive) => {
-        setConfirmArchive({ isOpen: true, idProyecto, isArchive });
+    const handleArchivar = (projectId, isArchive) => {
+        setConfirmArchive({ isOpen: true, projectId, isArchive });
     };
 
     const executeArchive = async () => {
-        if (!confirmArchive.idProyecto) return;
+        if (!confirmArchive.projectId) return;
         try {
-            await archivarProyecto(confirmArchive.idProyecto);
+            await archivarProyecto(confirmArchive.projectId);
             setProyectos(prevProyectos => prevProyectos.map(p => 
-                p.idProyecto === confirmArchive.idProyecto 
-                    ? { ...p, estado: p.estado === 'ARCHIVADO' ? 'ACTIVO' : 'ARCHIVADO' } 
+                p.projectId === confirmArchive.projectId 
+                    ? { ...p, status: p.status === 'ARCHIVADO' ? 'ACTIVO' : 'ARCHIVADO' } 
                     : p
             ));
             toast.success('Estado del proyecto actualizado');
@@ -125,7 +125,7 @@ export default function Dashboard() {
             toast.error('Error al cambiar el estado del proyecto');
             console.error("Error al actualizar proyecto:", error);
         }
-        setConfirmArchive({ isOpen: false, idProyecto: null, isArchive: true });
+        setConfirmArchive({ isOpen: false, projectId: null, isArchive: true });
     };
 
     return (
@@ -148,7 +148,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {proyectos.map(proyecto => (
                         <ProjectCard 
-                            key={proyecto.idProyecto} 
+                            key={proyecto.projectId} 
                             proyecto={proyecto} 
                             userRole={userRole}
                             onOpenAssignModal={async (id) => {
@@ -156,7 +156,7 @@ export default function Dashboard() {
                                 try {
                                     const { obtenerAsignacionesProyecto } = await import('../services/proyectoService');
                                     const asignaciones = await obtenerAsignacionesProyecto(id);
-                                    setColaboradoresAsignadosIds(asignaciones.map(a => a.usuario.idUsuario));
+                                    setColaboradoresAsignadosIds(asignaciones.map(a => a.usuario.userId));
                                 } catch(e) {
                                     console.error("Error cargando asignados", e);
                                     setColaboradoresAsignadosIds([]);
@@ -167,7 +167,7 @@ export default function Dashboard() {
                                 setProyectoEdit(p);
                                 setIsEditModalOpen(true);
                             }}
-                            onArchive={(id) => handleArchivar(id, proyecto.estado !== 'ARCHIVADO')}
+                            onArchive={(id) => handleArchivar(id, proyecto.status !== 'ARCHIVADO')}
                         />
                     ))}
 
@@ -199,8 +199,8 @@ export default function Dashboard() {
                                     required
                                     className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
                                     placeholder="Ej. Rediseño Web"
-                                    value={nuevoProyecto.nombre}
-                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, nombre: e.target.value})}
+                                    value={nuevoProyecto.name}
+                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, name: e.target.value})}
                                 />
                             </div>
                             
@@ -211,8 +211,8 @@ export default function Dashboard() {
                                     rows="3"
                                     className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none resize-none"
                                     placeholder="Objetivo principal del proyecto..."
-                                    value={nuevoProyecto.descripcion}
-                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, descripcion: e.target.value})}
+                                    value={nuevoProyecto.description}
+                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, description: e.target.value})}
                                 ></textarea>
                             </div>
 
@@ -221,8 +221,8 @@ export default function Dashboard() {
                                 <input 
                                     type="date"
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none"
-                                    value={nuevoProyecto.fechaLimite}
-                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, fechaLimite: e.target.value})}
+                                    value={nuevoProyecto.deadline}
+                                    onChange={(e) => setNuevoProyecto({...nuevoProyecto, deadline: e.target.value})}
                                 />
                             </div>
 
@@ -261,9 +261,9 @@ export default function Dashboard() {
                                     onChange={(e) => setSelectedUsuarioId(e.target.value)}
                                 >
                                     <option value="" disabled>Elige un colaborador...</option>
-                                    {usuariosList.filter(u => !colaboradoresAsignadosIds.includes(u.idUsuario)).map(u => (
-                                        <option key={u.idUsuario} value={u.idUsuario}>
-                                            {u.nombre || u.correoElectronico}
+                                    {usuariosList.filter(u => !colaboradoresAsignadosIds.includes(u.userId)).map(u => (
+                                        <option key={u.userId} value={u.userId}>
+                                            {u.name || u.email}
                                         </option>
                                     ))}
                                 </select>
@@ -304,8 +304,8 @@ export default function Dashboard() {
                                     type="text" 
                                     required
                                     className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
-                                    value={proyectoEdit.nombre || ''}
-                                    onChange={(e) => setProyectoEdit({...proyectoEdit, nombre: e.target.value})}
+                                    value={proyectoEdit.name || ''}
+                                    onChange={(e) => setProyectoEdit({...proyectoEdit, name: e.target.value})}
                                 />
                             </div>
                             
@@ -315,8 +315,8 @@ export default function Dashboard() {
                                     required
                                     rows="3"
                                     className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none resize-none"
-                                    value={proyectoEdit.descripcion || ''}
-                                    onChange={(e) => setProyectoEdit({...proyectoEdit, descripcion: e.target.value})}
+                                    value={proyectoEdit.description || ''}
+                                    onChange={(e) => setProyectoEdit({...proyectoEdit, description: e.target.value})}
                                 ></textarea>
                             </div>
 
@@ -325,8 +325,8 @@ export default function Dashboard() {
                                 <input 
                                     type="date"
                                     className="w-full px-4 py-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-red-500/20 focus:border-red-600 outline-none"
-                                    value={proyectoEdit.fechaLimite || ''}
-                                    onChange={(e) => setProyectoEdit({...proyectoEdit, fechaLimite: e.target.value})}
+                                    value={proyectoEdit.deadline || ''}
+                                    onChange={(e) => setProyectoEdit({...proyectoEdit, deadline: e.target.value})}
                                 />
                             </div>
 
@@ -370,7 +370,7 @@ export default function Dashboard() {
                         </p>
                         <div className="flex justify-center gap-3">
                             <button 
-                                onClick={() => setConfirmArchive({ isOpen: false, idProyecto: null, isArchive: true })}
+                                onClick={() => setConfirmArchive({ isOpen: false, projectId: null, isArchive: true })}
                                 className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg font-medium transition-colors"
                             >
                                 Cancelar
