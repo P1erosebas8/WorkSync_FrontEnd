@@ -220,7 +220,7 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                             )}
                             <div ref={commentsEndRef} />
                         </div>
-                    ) : (
+                    ) : activeTab === 'evidencias' ? (
                         <div className="space-y-4">
                             {canInteract && (
                                 <div className="flex justify-between items-center bg-red-900/20 p-4 rounded-lg border border-red-900/50">
@@ -274,7 +274,7 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                                 </div>
                             )}
                         </div>
-                    )}: activeTab === 'historial' ? (
+                    ) : activeTab === 'historial' ? (
                     <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-800 before:to-transparent">
                         {loadingHistorial ? (
                             <div className="text-center text-sm text-gray-500 relative z-10">Cargando...</div>
@@ -307,7 +307,7 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                             ))
                         )}
                     </div>
-                    ) : null
+                    ) : null}
                 </div>
 
                 {activeTab === 'comentarios' && canInteract && (
