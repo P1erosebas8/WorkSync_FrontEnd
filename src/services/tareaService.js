@@ -51,3 +51,13 @@ export const crearTarea = async (nuevaTarea, projectId) => {
 
     return response.json();
 };
+
+export const actualizarTarea = async (taskId, tareaData) => {
+    const response = await fetch(`${API_URL}/tareas/${taskId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(tareaData)
+    });
+    if (!response.ok) throw new Error('Error al actualizar la tarea');
+    return response.json();
+};

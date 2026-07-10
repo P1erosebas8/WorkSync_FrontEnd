@@ -158,13 +158,17 @@ export default function KanbanBoard() {
 
     const tareasFiltradas = tareas.map(t => {
         let isLocked = false;
-        if (t.dependsOnTaskId && t.status !== 'COMPLETADO') {
+        let dependsOnTaskTitle = '';
+        if (t.dependsOnTaskId) {
             const parent = tareas.find(p => p.taskId == t.dependsOnTaskId);
-            if (parent && parent.status !== 'COMPLETADO') {
-                isLocked = true;
+            if (parent) {
+                dependsOnTaskTitle = parent.title;
+                if (parent.status !== 'COMPLETADO') {
+                    isLocked = true;
+                }
             }
         }
-        return { ...t, isLocked };
+        return { ...t, isLocked, dependsOnTaskTitle };
     }).filter(t => {
         const matchSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchPriority = filterPriority === 'TODAS' || t.priority === filterPriority;
@@ -377,6 +381,18 @@ export default function KanbanBoard() {
                 <TaskModal
                     tarea={selectedTaskForDetails}
                     onClose={() => setSelectedTaskForDetails(null)}
+                    colaboradores={colaboradores}
+                    onReassign={async (taskId, newAssigneeId) => {
+                        try {
+                            const { actualizarTarea } = await import('../../services/tareaService');
+                            const tareaActualizada = await actualizarTarea(taskId, { ...selectedTaskForDetails, assigneeId: newAssigneeId });
+                            setTareas(tareasPrevias => tareasPrevias.map(t => t.taskId === taskId ? tareaActualizada : t));
+                            setSelectedTaskForDetails(tareaActualizada);
+                            toast.success("Reasignado correctamente");
+                        } catch(e) {
+                            toast.error("Error al reasignar la tarea");
+                        }
+                    }}
                 />
             )}
         </div>

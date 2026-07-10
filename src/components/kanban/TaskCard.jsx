@@ -32,9 +32,9 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
                         {tarea.priority}
                     </span>
-                    {tarea.isLocked && (
-                        <span className="material-symbols-outlined text-sm text-red-500" title="Depende de otra tarea incompleta">
-                            lock
+                    {tarea.dependsOnTaskId && (
+                        <span className={`material-symbols-outlined text-sm ${tarea.isLocked ? 'text-red-500' : 'text-green-500'}`} title={`Depende de: ${tarea.dependsOnTaskTitle}`}>
+                            {tarea.isLocked ? 'lock' : 'link'}
                         </span>
                     )}
                 </div>

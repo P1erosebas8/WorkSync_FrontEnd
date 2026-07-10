@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { getComentariosByTarea, createComentario } from '../../services/comentarioService';
 import { getEvidenciasByTarea, uploadEvidencia, descargarEvidencia } from '../../services/evidenciaService';
 
-export default function TaskModal({ tarea, onClose }) {
+export default function TaskModal({ tarea, onClose, colaboradores = [], onReassign }) {
     const [activeTab, setActiveTab] = useState('comentarios');
 
     const [comentarios, setComentarios] = useState([]);
@@ -119,10 +119,26 @@ export default function TaskModal({ tarea, onClose }) {
                 <div className="flex justify-between items-center p-6 border-b border-gray-800 shrink-0">
                     <div>
                         <h2 className="text-xl font-bold text-white truncate pr-4">{tarea.title}</h2>
-                        <div className="text-xs text-gray-400 mt-1 flex gap-3">
+                        <div className="text-xs text-gray-400 mt-1 flex gap-3 items-center">
                             <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
                             <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.status}</span>
-                            <span>Asignado a: {tarea.assigneeName || 'Nadie'}</span>
+                            <span className="flex items-center gap-1">
+                                Asignado a: 
+                                {isAdmin && onReassign ? (
+                                    <select 
+                                        className="bg-[#121212] border border-gray-700 text-white text-xs rounded px-1 outline-none"
+                                        value={tarea.assigneeId || ''}
+                                        onChange={(e) => onReassign(tarea.taskId, e.target.value)}
+                                    >
+                                        <option value="">Nadie</option>
+                                        {colaboradores.filter(u => u != null).map(u => (
+                                            <option key={u.userId} value={u.userId}>{u.name}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <span className="text-white">{tarea.assigneeName || 'Nadie'}</span>
+                                )}
+                            </span>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
