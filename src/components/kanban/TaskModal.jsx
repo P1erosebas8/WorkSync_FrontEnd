@@ -122,7 +122,7 @@ export default function TaskModal({ tarea, onClose }) {
                         <div className="text-xs text-gray-400 mt-1 flex gap-3">
                             <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
                             <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.status}</span>
-                            <span>Asignado a: {tarea.nombreUsuario || 'Nadie'}</span>
+                            <span>Asignado a: {tarea.assigneeName || 'Nadie'}</span>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -165,12 +165,12 @@ export default function TaskModal({ tarea, onClose }) {
                             ) : (
                                 comentarios.map(com => (
                                     <div key={com.commentId} className={`flex gap-3 ${com.userId === idUsuarioActual ? 'flex-row-reverse' : ''}`}>
-                                        <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs shrink-0" title={com.nombreUsuario}>
-                                            {com.nombreUsuario ? com.nombreUsuario.charAt(0).toUpperCase() : '?'}
+                                        <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs shrink-0" title={com.userName}>
+                                            {com.userName ? com.userName.charAt(0).toUpperCase() : '?'}
                                         </div>
                                         <div className={`flex flex-col max-w-[75%] ${com.userId === idUsuarioActual ? 'items-end' : 'items-start'}`}>
                                             <span className="text-[10px] text-gray-500 mb-1">
-                                                {com.nombreUsuario} • {new Date(com.creationDate).toLocaleString()}
+                                                {com.userName} • {new Date(com.creationDate).toLocaleString()}
                                             </span>
                                             <div className={`p-3 rounded-lg text-sm ${com.userId === idUsuarioActual ? 'bg-red-600 text-white rounded-tr-none' : 'bg-[#242424] text-gray-200 rounded-tl-none'}`}>
                                                 {com.content}
@@ -224,7 +224,7 @@ export default function TaskModal({ tarea, onClose }) {
                                                     {ev.fileName}
                                                 </span>
                                                 <p className="text-[10px] text-gray-500 mt-0.5">
-                                                    Subido por {ev.nombreUsuario} el {new Date(ev.uploadDate).toLocaleDateString()}
+                                                    Subido por {ev.userName} el {new Date(ev.uploadDate).toLocaleDateString()}
                                                 </p>
                                             </div>
                                             <button onClick={(e) => handleDownload(e, ev)} className="text-gray-400 hover:text-red-600 shrink-0" title="Descargar">

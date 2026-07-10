@@ -47,8 +47,8 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
             <p className="text-xs text-gray-400 line-clamp-2 mb-3">{tarea.description}</p>
             <div className="flex items-center justify-between mt-auto">
                 <div className="flex -space-x-2">
-                    <div className="w-6 h-6 rounded-full border-2 border-[#1a1a1a] bg-slate-800 flex items-center justify-center text-[10px] font-bold text-gray-300" title={tarea.nombreUsuario || 'Sin Asignar'}>
-                        {tarea.nombreUsuario ? tarea.nombreUsuario.charAt(0).toUpperCase() : '?'}
+                    <div className="w-6 h-6 rounded-full border-2 border-[#1a1a1a] bg-slate-800 flex items-center justify-center text-[10px] font-bold text-gray-300" title={tarea.assigneeName || 'Sin Asignar'}>
+                        {tarea.assigneeName ? tarea.assigneeName.charAt(0).toUpperCase() : '?'}
                     </div>
                 </div>
             </div>
