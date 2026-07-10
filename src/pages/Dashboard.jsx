@@ -177,12 +177,37 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-3">
                         <h3 className="text-[18px] font-semibold text-gray-100">Proyectos Recientes</h3>
-                        <span className="bg-[#1a1a1a] border border-gray-800 px-2 py-0.5 rounded text-[11px] font-bold text-gray-400">{proyectos.length} Total</span>
+                        <span className="bg-[#1a1a1a] border border-gray-800 px-2 py-0.5 rounded text-[11px] font-bold text-gray-400">
+                            {proyectos.filter(p => (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') || p.status !== 'ARCHIVADO').length} Total
+                        </span>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {proyectos.map(proyecto => (
+                    {(userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') && (
+                        <div 
+                            onClick={() => setIsModalOpen(true)}
+                            className="border-2 border-dashed border-gray-800 rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-red-500/50 transition-all bg-[#1a1a1a]/50 min-h-[220px]"
+                        >
+                            <div className="w-12 h-12 rounded-full bg-[#121212] flex items-center justify-center mb-4 group-hover:bg-red-900/30 group-hover:text-red-400 transition-colors">
+                                <span className="material-symbols-outlined text-gray-400 group-hover:text-red-400">add_circle</span>
+                            </div>
+                            <h4 className="text-[16px] font-bold text-gray-200 mb-1">Iniciar nuevo proyecto</h4>
+                            <p className="text-[12px] text-gray-500">Define objetivos, asigna equipo y comienza.</p>
+                        </div>
+                    )}
+
+                    {proyectos
+                        .filter(proyecto => {
+                            if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') return true;
+                            return proyecto.status !== 'ARCHIVADO';
+                        })
+                        .sort((a, b) => {
+                            if (a.status === 'ARCHIVADO' && b.status !== 'ARCHIVADO') return 1;
+                            if (a.status !== 'ARCHIVADO' && b.status === 'ARCHIVADO') return -1;
+                            return 0;
+                        })
+                        .map(proyecto => (
                         <ProjectCard 
                             key={proyecto.projectId} 
                             proyecto={proyecto} 
@@ -206,19 +231,7 @@ export default function Dashboard() {
                             onArchive={(id) => handleArchivar(id, proyecto.status !== 'ARCHIVADO')}
                         />
                     ))}
-
-                    {(userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') && (
-                        <div 
-                            onClick={() => setIsModalOpen(true)}
-                            className="border-2 border-dashed border-gray-800 rounded-xl p-6 flex flex-col items-center justify-center text-center group cursor-pointer hover:border-red-500/50 transition-all bg-[#1a1a1a]/50 min-h-[220px]"
-                        >
-                            <div className="w-12 h-12 rounded-full bg-[#121212] flex items-center justify-center mb-4 group-hover:bg-red-900/30 group-hover:text-red-400 transition-colors">
-                                <span className="material-symbols-outlined text-gray-400 group-hover:text-red-400">add_circle</span>
-                            </div>
-                            <h4 className="text-[16px] font-bold text-gray-200 mb-1">Iniciar nuevo proyecto</h4>
-                            <p className="text-[12px] text-gray-500">Define objetivos, asigna equipo y comienza.</p>
-                        </div>
-                    )}
+                </div>
                 </div>
             </section>
 
