@@ -33,9 +33,12 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
                         {tarea.priority}
                     </span>
                     {tarea.dependsOnTaskId && (
-                        <span className={`material-symbols-outlined text-sm ${tarea.isLocked ? 'text-red-500' : 'text-green-500'}`} title={`Depende de: ${tarea.dependsOnTaskTitle}`}>
-                            {tarea.isLocked ? 'lock' : 'link'}
-                        </span>
+                        <div className="flex items-center gap-1 text-[10px] bg-[#242424] px-1.5 py-0.5 rounded border border-gray-700 max-w-[120px]" title={tarea.dependsOnTaskTitle}>
+                            <span className={`material-symbols-outlined text-[12px] ${tarea.isLocked ? 'text-red-500' : 'text-green-500'}`}>
+                                {tarea.isLocked ? 'lock' : 'link'}
+                            </span>
+                            <span className="truncate text-gray-300 font-medium">{tarea.dependsOnTaskTitle}</span>
+                        </div>
                     )}
                 </div>
                 <button
