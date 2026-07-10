@@ -4,6 +4,7 @@ import KanbanColumn from './KanbanColumn';
 import { DndContext, closestCorners, DragOverlay, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
+import MetricsModal from './MetricsModal';
 import toast from 'react-hot-toast';
 import { obtenerTareasProyecto, actualizarEstadoTarea, crearTarea } from '../../services/tareaService';
 import { obtenerAsignacionesProyecto } from '../../services/proyectoService';
@@ -18,6 +19,7 @@ export default function KanbanBoard() {
     const [tareas, setTareas] = useState([]);
     const [colaboradores, setColaboradores] = useState([]);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
     const [selectedTaskForDetails, setSelectedTaskForDetails] = useState(null);
     const [nuevaTarea, setNuevaTarea] = useState({ title: '', description: '', priority: 'MEDIA', idResponsable: '' });
     const [userRole, setUserRole] = useState(null);
@@ -201,7 +203,13 @@ export default function KanbanBoard() {
                 </div>
 
                 <div className="flex items-center gap-3 flex-1 justify-end">
-
+                    <button 
+                        onClick={() => setIsMetricsModalOpen(true)}
+                        className="p-1.5 rounded-lg border border-gray-800 bg-[#121212] text-gray-400 hover:text-white hover:bg-gray-800 transition-colors flex items-center justify-center"
+                        title="Ver Estadísticas"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">monitoring</span>
+                    </button>
                     <button
                         onClick={() => setShowOnlyMyTasks(!showOnlyMyTasks)}
                         className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${showOnlyMyTasks ? 'bg-red-900/30 text-red-400 border border-red-900/50' : 'bg-gray-800 text-gray-300 border border-transparent hover:bg-gray-700'}`}
@@ -393,6 +401,13 @@ export default function KanbanBoard() {
                             toast.error("Error al reasignar la tarea");
                         }
                     }}
+                />
+            )}
+
+            {isMetricsModalOpen && (
+                <MetricsModal 
+                    projectId={projectId} 
+                    onClose={() => setIsMetricsModalOpen(false)} 
                 />
             )}
         </div>

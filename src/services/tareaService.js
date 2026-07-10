@@ -61,3 +61,12 @@ export const actualizarTarea = async (taskId, tareaData) => {
     if (!response.ok) throw new Error('Error al actualizar la tarea');
     return response.json();
 };
+
+export const getHistorialTarea = async (taskId) => {
+    const response = await fetch(`${API_URL}/tareas/${taskId}/historial`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Error al cargar el historial');
+    return response.json();
+};

@@ -89,3 +89,14 @@ export const archivarProyecto = async (projectId) => {
 
     return response.json();
 };
+
+export const obtenerMetricasProyecto = async (projectId) => {
+    const response = await fetch(`${API_URL}/proyectos/${projectId}/metricas`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    if (!response.ok) throw new Error('Error al obtener métricas');
+
+    return response.json();
+};

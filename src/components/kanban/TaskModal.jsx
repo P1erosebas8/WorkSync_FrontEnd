@@ -11,6 +11,8 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
     const [loadingComentarios, setLoadingComentarios] = useState(true);
     const [evidencias, setEvidencias] = useState([]);
     const [loadingEvidencias, setLoadingEvidencias] = useState(true);
+    const [historial, setHistorial] = useState([]);
+    const [loadingHistorial, setLoadingHistorial] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -39,7 +41,21 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
     useEffect(() => {
         cargarComentarios();
         cargarEvidencias();
+        cargarHistorial();
     }, [tarea.taskId]);
+
+    const cargarHistorial = async () => {
+        setLoadingHistorial(true);
+        try {
+            const { getHistorialTarea } = await import('../../services/tareaService');
+            const data = await getHistorialTarea(tarea.taskId);
+            setHistorial(data);
+        } catch (err) {
+            console.error("Error al cargar historial", err);
+        } finally {
+            setLoadingHistorial(false);
+        }
+    };
 
     const cargarComentarios = () => {
         setLoadingComentarios(true);
@@ -123,9 +139,9 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                             <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
                             <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.status}</span>
                             <span className="flex items-center gap-1">
-                                Asignado a: 
+                                Asignado a:
                                 {isAdmin && onReassign ? (
-                                    <select 
+                                    <select
                                         className="bg-[#121212] border border-gray-700 text-white text-xs rounded px-1 outline-none"
                                         value={tarea.assigneeId || ''}
                                         onChange={(e) => onReassign(tarea.taskId, e.target.value)}
@@ -167,6 +183,13 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                     >
                         <span className="material-symbols-outlined text-sm">attach_file</span>
                         Evidencias ({evidencias.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('historial')}
+                        className={`px-4 py-2 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'historial' ? 'border-red-600 text-red-500' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+                    >
+                        <span className="material-symbols-outlined text-sm">history</span>
+                        Historial
                     </button>
                 </div>
 
@@ -251,7 +274,40 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                                 </div>
                             )}
                         </div>
-                    )}
+                    )}: activeTab === 'historial' ? (
+                    <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-800 before:to-transparent">
+                        {loadingHistorial ? (
+                            <div className="text-center text-sm text-gray-500 relative z-10">Cargando...</div>
+                        ) : historial.length === 0 ? (
+                            <div className="text-center text-sm text-gray-500 py-10 relative z-10">Sin registros de auditoría.</div>
+                        ) : (
+                            historial.map((h, i) => (
+                                <div key={h.historyId} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-800 bg-[#1a1a1a] text-gray-500 group-hover:text-red-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                        <span className="material-symbols-outlined text-[18px]">
+                                            {h.changeDetail.includes("Reasignación") ? 'person_swap' : 'swap_horiz'}
+                                        </span>
+                                    </div>
+                                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-gray-800 bg-[#242424] shadow">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <div className="font-bold text-gray-300 text-sm">{h.changeDetail}</div>
+                                            <div className="text-[10px] text-gray-500">{new Date(h.changeDate).toLocaleString()}</div>
+                                        </div>
+                                        <div className="text-xs text-gray-400 mt-2 flex items-center gap-2">
+                                            <span className="bg-gray-800 px-2 py-0.5 rounded">{h.oldStatus}</span>
+                                            <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
+                                            <span className="bg-red-900/30 text-red-400 px-2 py-0.5 rounded">{h.newStatus}</span>
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 mt-2 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[12px]">person</span>
+                                            Modificado por: {h.userName}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    ) : null
                 </div>
 
                 {activeTab === 'comentarios' && canInteract && (
