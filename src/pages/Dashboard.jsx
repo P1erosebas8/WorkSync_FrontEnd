@@ -146,7 +146,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Global Metrics Dashboard for Admins */}
-                {userRole === 'ADMIN' && globalMetrics && (
+                {(userRole === 'ADMIN' || userRole === 'ROLE_ADMIN') && globalMetrics && (
                     <div className="mb-8 p-6 bg-[#121212] rounded-2xl border border-gray-800 shadow-xl">
                         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-red-500">monitoring</span>
