@@ -28,7 +28,10 @@ export const actualizarEstadoTarea = async (taskId, nuevoEstado) => {
         body: JSON.stringify({ status: nuevoEstado })
     });
 
-    if (!response.ok) throw new Error('Error actualizando estado');
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error actualizando estado');
+    }
 
     return response;
 };

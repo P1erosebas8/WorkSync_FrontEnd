@@ -28,9 +28,16 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
             className={`bg-[#1a1a1a] p-4 rounded-xl border ${isDragging || isOverlay ? 'border-red-500 shadow-xl scale-105 cursor-grabbing' : 'border-gray-800 shadow-sm cursor-grab'} hover:shadow-md transition-all group`}
         >
             <div className="flex items-start justify-between mb-2">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
-                    {tarea.priority}
-                </span>
+                <div className="flex gap-2 items-center">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border ${colorClass}`}>
+                        {tarea.priority}
+                    </span>
+                    {tarea.isLocked && (
+                        <span className="material-symbols-outlined text-sm text-red-500" title="Depende de otra tarea incompleta">
+                            lock
+                        </span>
+                    )}
+                </div>
                 <button
                     onClick={(e) => {
                         e.stopPropagation();

@@ -119,6 +119,7 @@ export default function KanbanBoard() {
             return;
         }
 
+        const estadoAnterior = tareaArrastrada.status;
         setTareas(tareasPrevias =>
             tareasPrevias.map(t =>
                 t.taskId === taskId ? { ...t, status: nuevoEstado } : t
@@ -128,13 +129,17 @@ export default function KanbanBoard() {
         actualizarEstadoTarea(taskId, nuevoEstado)
             .then(() => toast.success('Estado actualizado'))
             .catch(err => {
-                toast.error('Error actualizando estado');
-                console.error("Error actualizando tarea:", err);
+                toast.error(err.message || 'Error actualizando estado');
+                setTareas(tareasPrevias =>
+                    tareasPrevias.map(t =>
+                        t.taskId === taskId ? { ...t, status: estadoAnterior } : t
+                    )
+                );
             });
     };
 
     const cerrarModalYLimpiar = () => {
-        setNuevaTarea({ title: '', description: '', priority: 'MEDIA', idResponsable: '' });
+        setNuevaTarea({ title: '', description: '', priority: 'MEDIA', assigneeId: '', dependsOnTaskId: '' });
         setIsTaskModalOpen(false);
     };
 
@@ -151,7 +156,16 @@ export default function KanbanBoard() {
         }
     };
 
-    const tareasFiltradas = tareas.filter(t => {
+    const tareasFiltradas = tareas.map(t => {
+        let isLocked = false;
+        if (t.dependsOnTaskId && t.status !== 'COMPLETADO') {
+            const parent = tareas.find(p => p.taskId == t.dependsOnTaskId);
+            if (parent && parent.status !== 'COMPLETADO') {
+                isLocked = true;
+            }
+        }
+        return { ...t, isLocked };
+    }).filter(t => {
         const matchSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchPriority = filterPriority === 'TODAS' || t.priority === filterPriority;
         const matchUser = !showOnlyMyTasks || t.assigneeId === currentUserId;
@@ -311,13 +325,29 @@ export default function KanbanBoard() {
                                 <label className="block text-sm font-semibold text-gray-300 mb-1">Responsable</label>
                                 <select
                                     className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
-                                    value={nuevaTarea.assigneeId}
+                                    value={nuevaTarea.assigneeId || ''}
                                     onChange={(e) => setNuevaTarea({ ...nuevaTarea, assigneeId: e.target.value })}
                                 >
                                     <option value="">Sin asignar</option>
                                     {colaboradores.filter(u => u != null).map(user => (
                                         <option key={user.userId} value={user.userId}>
                                             {user.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Depende de (Opcional)</label>
+                                <select
+                                    className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none"
+                                    value={nuevaTarea.dependsOnTaskId || ''}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, dependsOnTaskId: e.target.value })}
+                                >
+                                    <option value="">Ninguna dependencia</option>
+                                    {tareas.map(t => (
+                                        <option key={t.taskId} value={t.taskId}>
+                                            {t.title}
                                         </option>
                                     ))}
                                 </select>
