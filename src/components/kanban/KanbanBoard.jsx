@@ -21,7 +21,7 @@ export default function KanbanBoard() {
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
     const [selectedTaskForDetails, setSelectedTaskForDetails] = useState(null);
-    const [nuevaTarea, setNuevaTarea] = useState({ title: '', description: '', priority: 'MEDIA', idResponsable: '' });
+    const [nuevaTarea, setNuevaTarea] = useState({ title: '', description: '', priority: 'MEDIA', assigneeId: '', dueDate: '' });
     const [userRole, setUserRole] = useState(null);
     const [activeTask, setActiveTask] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -363,6 +363,16 @@ export default function KanbanBoard() {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-300 mb-1">Fecha de Vencimiento (Opcional)</label>
+                                <input
+                                    type="date"
+                                    className="w-full px-4 py-2 border border-gray-800 bg-[#121212] text-white rounded-lg focus:ring-2 focus:ring-red-500/20 outline-none [color-scheme:dark]"
+                                    value={nuevaTarea.dueDate}
+                                    onChange={(e) => setNuevaTarea({ ...nuevaTarea, dueDate: e.target.value })}
+                                />
                             </div>
 
                             <div className="flex justify-end gap-3 pt-4">

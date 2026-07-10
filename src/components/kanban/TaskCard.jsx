@@ -61,6 +61,12 @@ export default function TaskCard({ tarea, isOverlay, onClick }) {
                         {tarea.assigneeName ? tarea.assigneeName.charAt(0).toUpperCase() : '?'}
                     </div>
                 </div>
+                {tarea.dueDate && (
+                    <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                        <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                        {new Date(tarea.dueDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -60,6 +60,10 @@ export default function MetricsModal({ projectId, onClose }) {
                                 <span className="text-sm text-gray-400">Tareas Atrasadas</span>
                                 <span className="font-bold text-red-400 bg-red-900/30 px-2 py-0.5 rounded">{metrics.overdueTasks}</span>
                             </div>
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm text-gray-400">Tareas Bloqueadas</span>
+                                <span className="font-bold text-orange-400 bg-orange-900/30 px-2 py-0.5 rounded">{metrics.blockedTasks || 0}</span>
+                            </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-sm text-gray-400">Tareas a Tiempo (Completadas)</span>
                                 <span className="font-bold text-green-400 bg-green-900/30 px-2 py-0.5 rounded">{metrics.onTimeTasks}</span>

@@ -10,7 +10,8 @@ export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores
         title: tarea.title,
         description: tarea.description,
         priority: tarea.priority,
-        dependsOnTaskId: tarea.dependsOnTaskId || ''
+        dependsOnTaskId: tarea.dependsOnTaskId || '',
+        dueDate: tarea.dueDate || ''
     });
 
     const [comentarios, setComentarios] = useState([]);
@@ -228,6 +229,18 @@ export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores
                         </div>
                     )}
                     
+                    {isEditing && (
+                        <div className="mt-4">
+                            <h3 className="text-sm font-semibold text-gray-300 mb-2">Fecha de Vencimiento</h3>
+                            <input
+                                type="date"
+                                className="w-full bg-[#1a1a1a] border border-gray-700 text-white rounded p-2 text-sm outline-none [color-scheme:dark]"
+                                value={editForm.dueDate}
+                                onChange={(e) => setEditForm({...editForm, dueDate: e.target.value})}
+                            />
+                        </div>
+                    )}
+                    
                     {!isEditing && tarea.dependsOnTaskId && (
                         <div className="mt-4 p-3 bg-red-900/10 border border-red-900/30 rounded-lg flex items-center gap-2">
                             <span className="material-symbols-outlined text-red-500 text-[18px]">link</span>
@@ -246,7 +259,8 @@ export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores
                                         title: tarea.title,
                                         description: tarea.description,
                                         priority: tarea.priority,
-                                        dependsOnTaskId: tarea.dependsOnTaskId || ''
+                                        dependsOnTaskId: tarea.dependsOnTaskId || '',
+                                        dueDate: tarea.dueDate || ''
                                     });
                                     setIsEditing(false);
                                 }}
@@ -259,7 +273,8 @@ export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores
                                             title: editForm.title,
                                             description: editForm.description,
                                             priority: editForm.priority,
-                                            dependsOnTaskId: editForm.dependsOnTaskId ? parseInt(editForm.dependsOnTaskId) : null
+                                            dependsOnTaskId: editForm.dependsOnTaskId ? parseInt(editForm.dependsOnTaskId) : null,
+                                            dueDate: editForm.dueDate || null
                                         });
                                         setIsEditing(false);
                                     }
