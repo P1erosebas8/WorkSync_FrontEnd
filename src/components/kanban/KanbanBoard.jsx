@@ -388,8 +388,21 @@ export default function KanbanBoard() {
             {selectedTaskForDetails && (
                 <TaskModal
                     tarea={selectedTaskForDetails}
+                    allTasks={tareas}
                     onClose={() => setSelectedTaskForDetails(null)}
                     colaboradores={colaboradores}
+                    onUpdateTask={async (taskId, updatedData) => {
+                        try {
+                            const { actualizarTarea } = await import('../../services/tareaService');
+                            const tareaActualizada = await actualizarTarea(taskId, { ...selectedTaskForDetails, ...updatedData });
+                            setTareas(tareasPrevias => tareasPrevias.map(t => t.taskId === taskId ? tareaActualizada : t));
+                            setSelectedTaskForDetails(tareaActualizada);
+                            toast.success("Tarea actualizada correctamente");
+                        } catch(e) {
+                            console.error(e);
+                            toast.error("Error al actualizar la tarea");
+                        }
+                    }}
                     onReassign={async (taskId, newAssigneeId) => {
                         try {
                             const { actualizarTarea } = await import('../../services/tareaService');
@@ -398,7 +411,8 @@ export default function KanbanBoard() {
                             setSelectedTaskForDetails(tareaActualizada);
                             toast.success("Reasignado correctamente");
                         } catch(e) {
-                            toast.error("Error al reasignar la tarea");
+                            console.error(e);
+                            toast.error("Error al reasignar");
                         }
                     }}
                 />

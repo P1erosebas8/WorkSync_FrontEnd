@@ -3,8 +3,15 @@ import toast from 'react-hot-toast';
 import { getComentariosByTarea, createComentario } from '../../services/comentarioService';
 import { getEvidenciasByTarea, uploadEvidencia, descargarEvidencia } from '../../services/evidenciaService';
 
-export default function TaskModal({ tarea, onClose, colaboradores = [], onReassign }) {
+export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores = [], onReassign, onUpdateTask }) {
     const [activeTab, setActiveTab] = useState('comentarios');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({
+        title: tarea.title,
+        description: tarea.description,
+        priority: tarea.priority,
+        dependsOnTaskId: tarea.dependsOnTaskId || ''
+    });
 
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState('');
@@ -132,15 +139,37 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
             <div className="bg-[#1a1a1a] rounded-xl w-full max-w-2xl h-[85vh] shadow-2xl flex flex-col overflow-hidden relative">
 
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-gray-800 shrink-0">
-                    <div>
-                        <h2 className="text-xl font-bold text-white truncate pr-4">{tarea.title}</h2>
-                        <div className="text-xs text-gray-400 mt-1 flex gap-3 items-center">
-                            <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
+                <div className="flex justify-between items-start p-6 border-b border-gray-800 shrink-0">
+                    <div className="flex-1 pr-4">
+                        {isEditing ? (
+                            <input
+                                type="text"
+                                className="w-full bg-[#121212] border border-gray-700 text-white rounded px-2 py-1 text-xl font-bold outline-none mb-2 focus:border-red-500"
+                                value={editForm.title}
+                                onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                            />
+                        ) : (
+                            <h2 className="text-xl font-bold text-white mb-2">{tarea.title}</h2>
+                        )}
+                        
+                        <div className="text-xs text-gray-400 mt-1 flex flex-wrap gap-3 items-center">
+                            {isEditing ? (
+                                <select
+                                    className="bg-[#121212] border border-gray-700 text-white rounded px-1 outline-none"
+                                    value={editForm.priority}
+                                    onChange={(e) => setEditForm({...editForm, priority: e.target.value})}
+                                >
+                                    <option value="ALTA">Alta</option>
+                                    <option value="MEDIA">Media</option>
+                                    <option value="BAJA">Baja</option>
+                                </select>
+                            ) : (
+                                <span className="uppercase bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-medium">{tarea.priority}</span>
+                            )}
                             <span className="uppercase bg-red-900/30 text-red-400 px-2 py-0.5 rounded font-medium">{tarea.status}</span>
                             <span className="flex items-center gap-1">
                                 Asignado a:
-                                {isAdmin && onReassign ? (
+                                {isAdmin && onReassign && !isEditing ? (
                                     <select
                                         className="bg-[#121212] border border-gray-700 text-white text-xs rounded px-1 outline-none"
                                         value={tarea.assigneeId || ''}
@@ -157,15 +186,88 @@ export default function TaskModal({ tarea, onClose, colaboradores = [], onReassi
                             </span>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <span className="material-symbols-outlined text-2xl">close</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {canInteract && !isEditing && (
+                            <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-white transition-colors">
+                                <span className="material-symbols-outlined text-[20px]">edit</span>
+                            </button>
+                        )}
+                        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                            <span className="material-symbols-outlined text-2xl">close</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* Body - Descripción estática */}
+                {/* Body - Descripción estática o editable */}
                 <div className="p-6 border-b border-gray-800 bg-[#121212] shrink-0">
                     <h3 className="text-sm font-semibold text-gray-300 mb-2">Descripción</h3>
-                    <p className="text-gray-400 text-sm whitespace-pre-wrap">{tarea.description}</p>
+                    {isEditing ? (
+                        <textarea
+                            className="w-full bg-[#1a1a1a] border border-gray-700 text-gray-300 rounded p-2 text-sm outline-none focus:border-red-500 resize-none"
+                            rows="4"
+                            value={editForm.description}
+                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                        ></textarea>
+                    ) : (
+                        <p className="text-gray-400 text-sm whitespace-pre-wrap">{tarea.description}</p>
+                    )}
+
+                    {isEditing && (
+                        <div className="mt-4">
+                            <h3 className="text-sm font-semibold text-gray-300 mb-2">Depende de (Opcional)</h3>
+                            <select
+                                className="w-full bg-[#1a1a1a] border border-gray-700 text-white rounded p-2 text-sm outline-none"
+                                value={editForm.dependsOnTaskId}
+                                onChange={(e) => setEditForm({...editForm, dependsOnTaskId: e.target.value})}
+                            >
+                                <option value="">Ninguna dependencia</option>
+                                {allTasks.filter(t => t.taskId !== tarea.taskId).map(t => (
+                                    <option key={t.taskId} value={t.taskId}>{t.title}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    
+                    {!isEditing && tarea.dependsOnTaskId && (
+                        <div className="mt-4 p-3 bg-red-900/10 border border-red-900/30 rounded-lg flex items-center gap-2">
+                            <span className="material-symbols-outlined text-red-500 text-[18px]">link</span>
+                            <span className="text-xs text-gray-400">Depende de: </span>
+                            <span className="text-sm font-semibold text-red-400">
+                                {allTasks.find(t => t.taskId === parseInt(tarea.dependsOnTaskId))?.title || 'Tarea Desconocida'}
+                            </span>
+                        </div>
+                    )}
+
+                    {isEditing && (
+                        <div className="flex gap-2 mt-4 justify-end">
+                            <button 
+                                onClick={() => {
+                                    setEditForm({
+                                        title: tarea.title,
+                                        description: tarea.description,
+                                        priority: tarea.priority,
+                                        dependsOnTaskId: tarea.dependsOnTaskId || ''
+                                    });
+                                    setIsEditing(false);
+                                }}
+                                className="px-3 py-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+                            >Cancelar</button>
+                            <button 
+                                onClick={() => {
+                                    if(onUpdateTask) {
+                                        onUpdateTask(tarea.taskId, {
+                                            title: editForm.title,
+                                            description: editForm.description,
+                                            priority: editForm.priority,
+                                            dependsOnTaskId: editForm.dependsOnTaskId ? parseInt(editForm.dependsOnTaskId) : null
+                                        });
+                                        setIsEditing(false);
+                                    }
+                                }}
+                                className="px-3 py-1.5 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                            >Guardar Cambios</button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Tabs */}
