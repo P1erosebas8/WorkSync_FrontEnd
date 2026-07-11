@@ -14,14 +14,21 @@ export default function KanbanColumn({ id, titulo, tareas, onAddTask, onTaskClic
                         {tareas.length}
                     </span>
                 </div>
-                <button className="text-gray-400 hover:text-gray-700">
-                    <span className="material-symbols-outlined text-[20px]">more_horiz</span>
-                </button>
             </div>
+
+            {onAddTask && (
+                <button 
+                    onClick={onAddTask}
+                    className="mb-3 flex items-center justify-center gap-2 w-full py-2 border-2 border-dashed border-gray-800 rounded-lg text-gray-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/30 transition-colors font-medium text-sm shrink-0"
+                >
+                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    Nueva Tarea
+                </button>
+            )}
             
             <div 
                 ref={setNodeRef}
-                className={`flex-1 flex flex-col gap-3 overflow-y-auto pb-6 rounded-xl transition-colors ${isOver ? 'bg-[#1a1a1a]/50 outline-dashed outline-2 outline-red-900/50' : ''}`}
+                className={`flex-1 flex flex-col gap-3 overflow-y-auto pb-24 rounded-xl transition-colors ${isOver ? 'bg-[#1a1a1a]/50 outline-dashed outline-2 outline-red-900/50' : ''}`}
             >
                 {tareas.length > 0 ? (
                     tareas.map(tarea => <TaskCard key={tarea.taskId} tarea={tarea} onClick={() => onTaskClick && onTaskClick(tarea)} />)
@@ -31,15 +38,6 @@ export default function KanbanColumn({ id, titulo, tareas, onAddTask, onTaskClic
                     </div>
                 )}
                 
-                {onAddTask && (
-                    <button 
-                        onClick={onAddTask}
-                        className="mt-2 flex items-center justify-center gap-2 w-full py-2 border-2 border-dashed border-gray-800 rounded-lg text-gray-400 hover:text-red-400 hover:border-red-900/50 hover:bg-red-900/30 transition-colors font-medium text-sm"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
-                        Nueva Tarea
-                    </button>
-                )}
             </div>
         </div>
     );

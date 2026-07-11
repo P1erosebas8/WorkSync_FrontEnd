@@ -71,7 +71,7 @@ export default function ProjectCard({ proyecto, userRole, onOpenAssignModal, onE
                 </div>
                 <span className="text-[11px] font-medium text-gray-500 flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                    {proyecto.creationDate ? new Date(proyecto.creationDate).toLocaleDateString() : ''}
+                    {proyecto.createdAt ? new Date(proyecto.createdAt).toLocaleDateString() : (proyecto.creationDate ? new Date(proyecto.creationDate).toLocaleDateString() : '')}
                 </span>
             </div>
             <div className="absolute inset-0 border-2 border-transparent group-hover:border-red-500/10 rounded-xl pointer-events-none transition-all"></div>

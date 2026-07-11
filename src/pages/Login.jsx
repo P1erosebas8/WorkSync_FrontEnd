@@ -196,20 +196,20 @@ export default function Login() {
 
             {forgotStep > 0 && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md relative animate-fade-in-up">
+                    <div className="bg-[#1a1a1a] border border-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md relative animate-fade-in-up">
                         <button
                             onClick={() => setForgotStep(0)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors"
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
                         >
                             <span className="material-symbols-outlined">close</span>
                         </button>
 
-                        <h3 className="text-[24px] font-bold text-gray-900 mb-2">
+                        <h3 className="text-[24px] font-bold text-white mb-2">
                             {forgotStep === 1 && "Recuperar Contraseña"}
                             {forgotStep === 2 && "Ingresar Código"}
                             {forgotStep === 3 && "Nueva Contraseña"}
                         </h3>
-                        <p className="text-[14px] text-gray-500 mb-6">
+                        <p className="text-[14px] text-gray-400 mb-6">
                             {forgotStep === 1 && "Ingresa tu correo para recibir un código de verificación."}
                             {forgotStep === 2 && `Hemos enviado un código de 6 dígitos a ${resetEmail}`}
                             {forgotStep === 3 && "Ingresa tu nueva contraseña para acceder a tu cuenta."}
@@ -219,7 +219,7 @@ export default function Login() {
                             {forgotStep === 1 && (
                                 <input
                                     type="email"
-                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                                    className="block w-full px-4 py-3 bg-[#121212] border border-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
                                     placeholder="correo@worksync.com"
                                     value={resetEmail}
                                     onChange={(e) => setResetEmail(e.target.value)}
@@ -230,7 +230,7 @@ export default function Login() {
                             {forgotStep === 2 && (
                                 <input
                                     type="text"
-                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-center tracking-[0.5em] font-bold text-xl transition-all"
+                                    className="block w-full px-4 py-3 bg-[#121212] border border-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 text-center tracking-[0.5em] font-bold text-xl transition-all"
                                     placeholder="000000"
                                     maxLength="6"
                                     value={resetOtp}
@@ -242,7 +242,7 @@ export default function Login() {
                             {forgotStep === 3 && (
                                 <input
                                     type="password"
-                                    className="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                                    className="block w-full px-4 py-3 bg-[#121212] border border-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
                                     placeholder="Nueva contraseña"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
