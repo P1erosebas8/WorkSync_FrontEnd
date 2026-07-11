@@ -6,7 +6,7 @@ export default function KanbanColumn({ id, titulo, tareas, onAddTask, onTaskClic
     const { isOver, setNodeRef } = useDroppable({ id: id });
 
     return (
-        <div className="w-[270px] max-w-[270px] flex flex-col h-full shrink-0">
+        <div ref={setNodeRef} className={`w-[270px] max-w-[270px] flex flex-col h-full shrink-0 rounded-xl transition-all ${isOver ? 'bg-[#1a1a1a]/50 outline-dashed outline-2 outline-red-900/50' : ''}`}>
             <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">{titulo}</h3>
@@ -26,10 +26,7 @@ export default function KanbanColumn({ id, titulo, tareas, onAddTask, onTaskClic
                 </button>
             )}
             
-            <div 
-                ref={setNodeRef}
-                className={`flex-1 flex flex-col gap-3 overflow-y-auto pb-24 rounded-xl transition-colors ${isOver ? 'bg-[#1a1a1a]/50 outline-dashed outline-2 outline-red-900/50' : ''}`}
-            >
+            <div className="flex-1 flex flex-col gap-3 overflow-y-auto pb-12">
                 {tareas.length > 0 ? (
                     tareas.map(tarea => <TaskCard key={tarea.taskId} tarea={tarea} onClick={() => onTaskClick && onTaskClick(tarea)} />)
                 ) : (

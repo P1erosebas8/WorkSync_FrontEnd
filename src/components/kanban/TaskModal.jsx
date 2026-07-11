@@ -129,22 +129,21 @@ export default function TaskModal({ tarea, allTasks = [], onClose, colaboradores
     const handleDownload = async (e, ev) => {
         e.preventDefault();
         if (ev.downloadUrl) {
-            try {
-                const response = await fetch(ev.downloadUrl);
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = ev.fileName || 'descarga';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            } catch (err) {
-                console.error('Error al descargar:', err);
-                window.open(ev.downloadUrl, '_blank');
+            if (ev.downloadUrl.includes('cloudinary.com')) {
+                const parts = ev.downloadUrl.split('/upload/');
+                if (parts.length === 2) {
+                    const downloadUrl = `${parts[0]}/upload/fl_attachment/${parts[1]}`;
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = ev.fileName || 'descarga';
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    return;
+                }
             }
+            window.open(ev.downloadUrl, '_blank');
         } else {
             toast.error("El archivo no tiene una URL válida");
         }
