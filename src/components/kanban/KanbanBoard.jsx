@@ -250,7 +250,7 @@ export default function KanbanBoard() {
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                 >
-                    <div className="flex h-full gap-6 items-start pb-4">
+                    <div className="flex h-full gap-6 items-stretch pb-4">
                         <KanbanColumn
                             id="PENDIENTE"
                             titulo="Pendiente"
